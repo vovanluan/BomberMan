@@ -1,4 +1,9 @@
-var game = new Phaser.Game(512, 512, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+function BomberMan(Id, game){
+    this.Id = Id;
+    this.game = game;
+    this.bomberman = game.add.sprite(40, 40, 'bomberman');
+}
+var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 function preload() {
 	// Tilemaps are split into two parts: the actual map data and the tilesets to render the map
@@ -7,8 +12,17 @@ function preload() {
 	game.load.tilemap('level1', 'assets/tilemaps/maps/level1.csv', null, Phaser.Tilemap.CSV);
     
 	//Next we load the tilesets
+
 	game.load.image('tiles', 'assets/tilemaps/tiles/tiles.png');
-    game.load.image('player', 'assets/star.png');
+
+	
+
+    //Load spritesheet
+    game.load.spritesheet('bomberman', 'assets/images/Bomberman2.png', 34, 42);
+    game.load.spritesheet('items', 'assets/images/Items.png');
+    game.load.spritesheet('bombexplosion', 'assets/images/Bomb and Explosions.png');
+
+    
 }
 
 var map;
@@ -20,7 +34,9 @@ function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     //  Because we're loading CSV map data we have to specify the tile size here or we can't render it
-	map = game.add.tilemap('level1', 16, 16);
+
+	map = game.add.tilemap('level1', 40, 40);
+
     //  Now add in the tileset
     map.addTilesetImage('tiles');
 
@@ -32,7 +48,8 @@ function create() {
     //  This resizes the game world to match the layer dimensions
     layer.resizeWorld();
 
-    player = game.add.sprite(100, 100, 'player', 1);
+
+    player = game.add.sprite(40, 40, 'bomberman');
     game.physics.arcade.enable(player);
     player.body.setSize(10, 14, 2, 1);
     player.body.collideWorldBounds = true;
@@ -40,6 +57,7 @@ function create() {
     cursors = game.input.keyboard.createCursorKeys();
     console.log(player);
     console.log(layer);
+
 }
 
 function update() {
