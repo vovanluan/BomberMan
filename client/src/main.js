@@ -13,12 +13,10 @@ function preload() {
     
 	//Next we load the tilesets
 
-	game.load.image('tiles', 'assets/tilemaps/tiles/tiles.png');
-
-	
+	game.load.image('tiles', 'assets/tilemaps/tiles/tileset.png');
 
     //Load spritesheet
-    game.load.spritesheet('bomberman', 'assets/images/Bomberman2.png', 34, 42);
+    game.load.spritesheet('bomberman', 'assets/images/Bomberman2.png', 58.67, 43);
     game.load.spritesheet('items', 'assets/images/Items.png');
     game.load.spritesheet('bombexplosion', 'assets/images/Bomb and Explosions.png');
 
@@ -42,7 +40,7 @@ function create() {
 
     layer = map.createLayer(0);
 
-    map.setCollisionByExclusion([196], true, layer);
+    map.setCollisionByExclusion([240], true, layer);
     
 
     //  This resizes the game world to match the layer dimensions
@@ -51,8 +49,14 @@ function create() {
 
     player = game.add.sprite(40, 40, 'bomberman');
     game.physics.arcade.enable(player);
-    player.body.setSize(10, 14, 2, 1);
+    player.body.setSize(40, 40, 0, 0);
     player.body.collideWorldBounds = true;
+
+    player.animations.add('right', [3, 17, 31], 5, false);
+    player.animations.add('left', [1, 15, 29], 5, false);
+    player.animations.add('up', [2, 16, 30], 5, false);
+    player.animations.add('down', [0, 14, 28], 5, false);
+    
 
     cursors = game.input.keyboard.createCursorKeys();
     console.log(player);
@@ -70,28 +74,32 @@ function update() {
     {
         //  Move to the left
         player.body.velocity.x = +150;
-
+        player.animations.play('right');
         //player.animations.play('left');
     }
-    if (cursors.left.isDown)
+    else if (cursors.left.isDown)
     {
         //  Move to the left
         player.body.velocity.x = -150;
+        player.animations.play('left');
 
         //player.animations.play('left');
     }
-    if (cursors.up.isDown)
+    else if (cursors.up.isDown)
     {
         //  Move to the left
         player.body.velocity.y = -150;
-
-        //player.animations.play('left');
+        player.animations.play('up');
     }
-    if (cursors.down.isDown)
+    else if (cursors.down.isDown)
     {
         //  Move to the left
         player.body.velocity.y = +150;
+        player.animations.play('down');
+    }
+    else {
+        player.animations.stop();
 
-        //player.animations.play('left');
+        player.frame = 0;
     }
 }
