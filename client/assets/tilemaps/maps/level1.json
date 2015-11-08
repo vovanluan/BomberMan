@@ -1,0 +1,44 @@
+{ "height":32,
+ "layers":[
+        {
+         "compression":"zlib",
+         "data":"eJzVlzESwyAMBLHLfDn\/8U88fCuhCqM5SRxgRIprGKH1SYDhTCmdgbq+uoN0CX6uVMe9jp9uEV\/GMoiVLJRb8lkh\/oj\/kuud8PeP8lFuxH+65xZfi7fUGuPVf4V3WQNm\/WletLEWP4hv7UGvn9q4lpPht6wnTS18tv9ZzGPOgJ7+1z4sPlM7jy9ZiI9itRipg\/Q\/WzWfOTdYabk9\/7vVn+Uz9Wc1sv+0\/vf2tncO8h91\/nmxq85\/y+eT\/79d\/\/+r7j8R2u3+GX3\/ZjX7\/fFv768Z6y\/y7V30AUpijmw=",
+         "encoding":"base64",
+         "height":32,
+         "name":"World1",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":32,
+         "x":0,
+         "y":0
+        }],
+ "nextobjectid":1,
+ "orientation":"orthogonal",
+ "properties":
+    {
+
+    },
+ "renderorder":"right-down",
+ "tileheight":16,
+ "tilesets":[
+        {
+         "firstgid":1,
+         "image":"assets/tilemaps/tiles/tiles.png",
+         "imageheight":304,
+         "imagewidth":240,
+         "margin":0,
+         "name":"Level1",
+         "properties":
+            {
+
+            },
+         "spacing":0,
+         "tilecount":285,
+         "tileheight":16,
+         "tilewidth":16
+        }],
+ "tilewidth":16,
+ "version":1,
+ "width":32
+}
