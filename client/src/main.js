@@ -19,14 +19,13 @@ function preload() {
     game.load.spritesheet('bomberman', 'assets/images/Bomberman2.png', 58.67, 43);
     game.load.spritesheet('items', 'assets/images/Items.png');
     game.load.spritesheet('bombexplosion', 'assets/images/Bomb and Explosions.png');
-
-    
 }
 
 var map;
 var layer;
 var cursors;
 var player;
+var booms;
 
 function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -56,12 +55,13 @@ function create() {
     player.animations.add('left', [1, 15, 29], 5, false);
     player.animations.add('up', [2, 16, 30], 5, false);
     player.animations.add('down', [0, 14, 28], 5, false);
-    
+
+    booms = game.add.group();
+    booms.enableBody = true;
+    var boom = booms.create(0, game.world.height - 64, 'bomberman', 10);
+
 
     cursors = game.input.keyboard.createCursorKeys();
-    console.log(player);
-    console.log(layer);
-
 }
 
 function update() {
