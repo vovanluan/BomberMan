@@ -19,6 +19,7 @@ function preload() {
 
     // Font
     game.load.bitmapFont('carrier_command', 'assets/fonts/carrier_command.png', 'assets/fonts/carrier_command.xml');
+
 }
 
 var map;
