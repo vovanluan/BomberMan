@@ -1,8 +1,8 @@
-function BomberMan(Id, game){
+/*function BomberMan(Id, game){
     this.Id = Id;
     this.game = game;
     this.bomberman = game.add.sprite(40, 40, 'bomberman');
-}
+}*/
 var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 function preload() {
@@ -16,7 +16,9 @@ function preload() {
 	game.load.image('tiles', 'assets/tilemaps/tiles/tileset.png');
 
     //Load spritesheet
+
     game.load.spritesheet('bomberman', 'assets/images/Bomberman2.png', 58.67, 43);
+
     game.load.spritesheet('items', 'assets/images/Items.png');
     game.load.spritesheet('bombexplosion', 'assets/images/Bomb and Explosions.png');
 }
@@ -28,6 +30,7 @@ var player;
 var booms;
 
 function create() {
+
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     //  Because we're loading CSV map data we have to specify the tile size here or we can't render it
@@ -46,6 +49,7 @@ function create() {
     layer.resizeWorld();
 
 
+
     player = game.add.sprite(40, 40, 'bomberman');
     game.physics.arcade.enable(player);
     player.body.setSize(40, 40, 0, 0);
@@ -61,10 +65,15 @@ function create() {
     var boom = booms.create(0, game.world.height - 64, 'bomberman', 10);
 
 
+    layer.debug = true;
+
+
+
     cursors = game.input.keyboard.createCursorKeys();
 }
 
 function update() {
+
 
     game.physics.arcade.collide(player, layer);
     player.body.velocity.x = 0;
@@ -101,5 +110,8 @@ function update() {
         player.animations.stop();
 
         player.frame = 0;
+
     }
+}
+function render() {
 }
