@@ -20,7 +20,7 @@ function preload() {
     game.load.spritesheet('bomberman', 'assets/images/Bomberman2.png', 58.67, 43);
 
     game.load.spritesheet('items', 'assets/images/Items.png');
-    game.load.spritesheet('bombexplosion', 'assets/images/Bomb and Explosions.png');
+    game.load.spritesheet('bombexplosion', 'assets/images/Bomb&Explosions.png');
 }
 
 var map;
