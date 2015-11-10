@@ -326,6 +326,7 @@ function explosion_tail(posInTile_x, posIntile_y, direction) {
     var rand = Math.random();
     map.putTile(240, posInTile_x, posIntile_y, layer);
     // Create Bomb Item
+<<<<<<< HEAD:client/js/play.js
     // if (rand < 0.2) {
     //     items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 0);
     // }
@@ -337,6 +338,19 @@ function explosion_tail(posInTile_x, posIntile_y, direction) {
     // else if (rand < 0.6) {
     //     items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 2);
     // }
+=======
+    if (rand < 0.15) {
+        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 0);
+    }
+    // Create Power Item: Increase range
+    else if (rand < 0.3) {
+        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 1);
+    }
+    // Create increasing speed Item
+    else if (rand < 0.4) {
+        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 2);
+    }
+>>>>>>> 70f75f1c1c9a529c9cec789e9dc82fabd0664266:client/js/playOnline.js
     // else {
     //     map.putTile(240, posInTile_x, posIntile_y, layer);
     // }
@@ -373,7 +387,7 @@ function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
 
 }
 
-var playState = {
+var playOnlineState= {
 	create:function () {
         game.physics.startSystem(Phaser.Physics.ARCADE);
         
@@ -398,7 +412,7 @@ var playState = {
         // Ease Enemies
         easyenemies = game.add.group();
         easyenemies.enableBody = true;
-        var numEasyEnemies = Math.floor(Math.random() * 2 + 2);
+        var numEasyEnemies = Math.floor(Math.random() * 4 + 4);
         for (var i = 0; i < numEasyEnemies; i++) {
             getRandomCoordinates();
             easyenemies.create(randomX, randomY, 'easyenemies');
@@ -411,7 +425,7 @@ var playState = {
         // Normal Enemies
         normalenemies = game.add.group();
         normalenemies.enableBody = true;
-        var numNormalEnemies = Math.floor(Math.random() * 2 + 1);
+        var numNormalEnemies = Math.floor(Math.random() * 3 + 3);
         for (var t = 0; t < numNormalEnemies; t++) {
             getRandomCoordinates();
             normalenemies.create(randomX, randomY, 'easyenemies', 8);
@@ -442,7 +456,14 @@ var playState = {
         layer.debug = true;
 
         cursors = game.input.keyboard.createCursorKeys();
-        items.create(120, 40, 'items', 2);
+        pause_label = game.add.text(game.world.width - 100, 20, 'Pause', { font: '24px Arial', fill: '#fff' });
+        pause_label.inputEnabled = true;
+        pause_label.events.onInputUp.add(function () {
+            game.paused = true;
+           });
+        game.input.onDown.add(function () {
+            game.paused = false;
+        }, self);
 	},
 	update: function () {
         if (!player.sprite.alive) {

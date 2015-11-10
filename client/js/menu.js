@@ -1,10 +1,12 @@
 var menuState = {
 	create: function() {
-		var startLabel = game.add.text(80, game.world.height - 80, 'Press "W" key to start', {font: '25px Arial', fill: '#ffffff'});
-		var wkey = game.input.keyboard.addKey(Phaser.Keyboard.W);
-		wkey.onDown.addOnce(this.start, this);
+		game.add.button(400, 200, 'startGame', this.play, this);
+		game.add.button(390, 300, 'howToPlay', this.howToPlay, this);
 	},
-	start: function() {
-		game.state.start('play');
+	play: function() {
+		game.state.start('chooseMode');
+	},
+	howToPlay: function () {
+		game.state.start('howToPlay');
 	}
 };
