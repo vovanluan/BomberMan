@@ -14,7 +14,6 @@ function BomberMan(Id, game, x, y) {
 }
 var game = new Phaser.Game(1000, 600, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
 
-
 function preload() {
 	
 
