@@ -9,7 +9,7 @@ function Enemy(Id, game, x, y) {
     this.game = game;
     this.enemy = game.add.sprite(x, y, 'easyenemies');
 }
-var game = new Phaser.Game(1000, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(1000, 600, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
 
 function preload() {
 	// Tilemaps are split into two parts: the actual map data and the tilesets to render the map
@@ -36,6 +36,8 @@ var cursors;
 var player;
 var booms;
 var easyenemies;
+var randomX;
+var randomY;
 
 function create() {
 
@@ -60,11 +62,13 @@ function create() {
     easyenemies = game.add.group();
     easyenemies.enableBody = true;
 
-    var enemy = easyenemies.create(200, 40, 'easyenemies');
-    enemy.body.gravity.x = 30;
-    enemy.body.bounce.x = 1;
-    enemy = easyenemies.create(240, 200, 'easyenemies');
-    enemy.body.velocity.y = 30;
+    var numEasyEnemies = Math.floor(Math.random() * 4 + 1);
+    for (var i = 0; i < numEasyEnemies; i++) {
+        getRandomCoordinates();
+        var easyEnemy = easyenemies.create(randomX, randomY, 'easyenemies');
+        easyEnemy.body.velocity.x = 30;
+        easyEnemy.body.velocity.y = 30;
+    }
 
     // Create animations for all easyenemies in this group
     easyenemies.callAll('animations.add', 'animations', 'walk', [0, 1, 2], 5, false);
@@ -80,10 +84,6 @@ function create() {
     player.animations.add('up', [2, 16, 30], 5, false);
     player.animations.add('down', [0, 14, 28], 5, false);
 
-    booms = game.add.group();
-    booms.enableBody = true;
-    var boom = booms.create(0, game.world.height - 64, 'bomberman', 10);
-
     layer.debug = true;
 
     cursors = game.input.keyboard.createCursorKeys();
@@ -96,7 +96,8 @@ function update() {
 
     // Easy enemies
     easyenemies.callAll('play', null, 'walk');
-    easyenemies.forEach(easyEnemyMovement, this);
+    var changeDirection = 1;
+    easyenemies.forEach(easyEnemyMovement, this, changeDirection);
 
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
@@ -135,15 +136,32 @@ function update() {
 
     }
 }
-function easyEnemyMovement(easyEnemy) {
-/*    if (easyEnemy.body.touching.left  || easyEnemy.body.touching.right) {
-        easyEnemy.body.velocity.x *= -1;
+function easyEnemyMovement(easyEnemy, changeDirection) {
+    if (easyEnemy.body.blocked.left) {
+        easyEnemy.body.velocity.x = 30;
     }
-    else if (easyEnemy.body.touching.up || easyEnemy.body.touching.down) {
-        easyEnemy.body.velocity.y *= -1;
-    }*/
-
-
+    else if (easyEnemy.body.blocked.right) {
+        easyEnemy.body.velocity.x = -30;
+    }
+    else if (easyEnemy.body.blocked.up) {
+        easyEnemy.body.velocity.y = 30;
+    }
+    else if (easyEnemy.body.blocked.down) {
+        easyEnemy.body.velocity.y = -30;
+    }
 }
+function getRandomCoordinates(){
+            var randX = Math.floor((Math.random() * (game.world.width/40)));
+            var randY = Math.floor((Math.random() * (game.world.height/40)));
+            var tileId = map.getTile(randX,randY,layer).index;
+            if (tileId != 240 || (randX == 1 && randY == 1)) {
+                getRandomCoordinates();
+            }else{
+                randomX = randX * 40;
+                randomY = randY * 40;
+                return;
+            }
+        }
 function render() {
+    game.debug.body(player)
 }
