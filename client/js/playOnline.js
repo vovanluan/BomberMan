@@ -326,19 +326,7 @@ function explosion_tail(posInTile_x, posIntile_y, direction) {
     var rand = Math.random();
     map.putTile(240, posInTile_x, posIntile_y, layer);
     // Create Bomb Item
-<<<<<<< HEAD:client/js/play.js
-    // if (rand < 0.2) {
-    //     items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 0);
-    // }
-    // // Create Power Item: Increase range
-    // else if (rand < 0.4) {
-    //     items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 1);
-    // }
-    // // Create increasing speed Item
-    // else if (rand < 0.6) {
-    //     items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 2);
-    // }
-=======
+
     if (rand < 0.15) {
         items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 0);
     }
@@ -350,10 +338,7 @@ function explosion_tail(posInTile_x, posIntile_y, direction) {
     else if (rand < 0.4) {
         items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 2);
     }
->>>>>>> 70f75f1c1c9a529c9cec789e9dc82fabd0664266:client/js/playOnline.js
-    // else {
-    //     map.putTile(240, posInTile_x, posIntile_y, layer);
-    // }
+
 
     var posInWorld = getPosFromTile(posInTile_x, posIntile_y);
     var bomb_apart = bombs_exploision.create(posInWorld.x, posInWorld.y, 'bomb_exploision2');
