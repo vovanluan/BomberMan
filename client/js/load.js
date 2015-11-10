@@ -16,6 +16,11 @@ var loadState = {
 	    game.load.image('bomb_exploision0', 'assets/images/bomb_exploision0.png');
 	    game.load.image('bomb_exploision1', 'assets/images/bomb_exploision1.png');
 	    game.load.image('bomb_exploision2', 'assets/images/bomb_exploision2.png');
+	    game.load.image('startGame', 'assets/images/startButton.png');
+	    game.load.image('howToPlay', 'assets/images/howToPlay.png');
+	    game.load.image('playOnline', 'assets/images/playOnline.png');
+	    game.load.image('playAgainstBot', 'assets/images/playAgainstBot.png')	
+	    game.load.image('playAgain', 'assets/images/playAgain.png')	    
 
 
 	    //Fix size player
