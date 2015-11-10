@@ -9,6 +9,7 @@ function BomberMan(Id, game, x, y) {
     this.game = game;
     this.sprite = game.add.sprite(x, y, 'bomberman');
     this.numberOfBomb = 1;
+    this.bomb_available = 0;
     this.speed = PLAYER_SPEED;
     this.power = 1;
 }
@@ -314,6 +315,7 @@ function getPosTile(posInWorld_x, posInWorld_y) {
 function bomb_exploision_end(bombs_exploision, destroyed_blocks) {
     
     bombs_exploision.removeAll(true); // Remove then destroy
+    player.bomb_available --;
 }
 
 function explosion_tail(posInTile_x, posIntile_y, direction) {
@@ -514,8 +516,10 @@ var playState = {
             var exist = {e:false};
             bombs.forEachAlive(placeBombIfNotExist, this, pos.x, pos.y, exist);
             if (!exist.e) {
-                var b = Bomb(5, pos.x, pos.y);
-                //b.clock.pause();
+                if (player.bomb_available < player.numberOfBomb) {
+                    var b = Bomb(player.power, pos.x, pos.y);
+                    player.bomb_available ++;
+                }
             }
         }
 
