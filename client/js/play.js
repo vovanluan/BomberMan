@@ -81,6 +81,7 @@ function normalEnemyMovement(normalEnemy, player) {
         easyEnemyMovement(normalEnemy, NORMAL_ENEMIES_SPEED);
     }
 }
+
 function playerDeath(sprite, enemy) {
     if (sprite.alive) {
         sprite.animations.play('die');
@@ -92,6 +93,7 @@ function playerDeath(sprite, enemy) {
         })
     }
 }
+
 function enemyDeath(bombSprite, enemy) {
     if (enemy.alive) {
         enemy.animations.play('die');
@@ -103,6 +105,7 @@ function enemyDeath(bombSprite, enemy) {
         })
     }
 }
+
 function playerHitItem(sprite, item) {
     if (item.frame == 0) {
         player.numberOfBomb += 1;
@@ -153,7 +156,6 @@ function Bomb(power, pos_x, pos_y) {
 
     return bomb;
 }
-
 
 function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
     duration = 500;
@@ -302,8 +304,15 @@ function getPosFromTile(tile_x, tile_y) {
         x:posx, y:posy
     };
 }
+function getPosTile(posInWorld_x, posInWorld_y) {
+    var pos={x:0, y:0};
+    pos.x = game.math.snapToFloor(Math.floor(posInWorld_x), TILE_WIDTH) / TILE_WIDTH;
+    pos.y = game.math.snapToFloor(Math.floor(posInWorld_y), TILE_WIDTH) / TILE_WIDTH;
+    return pos;
+}
 
 function bomb_exploision_end(bombs_exploision, destroyed_blocks) {
+    
     bombs_exploision.removeAll(true); // Remove then destroy
 }
 
@@ -441,8 +450,9 @@ var playState = {
             lastTime = game.time.time;
         }
         var pos = {x:0, y:0};
-        pos.x = this.math.snapToFloor(Math.floor(player.sprite.x), TILE_WIDTH) / TILE_WIDTH;
-        pos.y = this.math.snapToFloor(Math.floor(player.sprite.y), TILE_WIDTH) / TILE_WIDTH;
+        // pos.x = this.math.snapToFloor(Math.floor(player.sprite.x+17), TILE_WIDTH) / TILE_WIDTH;
+        // pos.y = this.math.snapToFloor(Math.floor(player.sprite.y+21), TILE_WIDTH) / TILE_WIDTH;
+        pos = getPosTile(player.sprite.x + 17, player.sprite.y + 21);
 
         game.physics.arcade.collide(easyenemies, layer);
         game.physics.arcade.collide(normalenemies, layer);
@@ -469,11 +479,15 @@ var playState = {
         player.sprite.body.velocity.y = 0;
 
         if (!player.sprite.alive) {
-
+        }
         else if (cursors.right.isDown) {
             //  Move to the right
             player.sprite.body.velocity.x = player.speed;
             player.sprite.animations.play('right');
+            // var posInTile = getPosTile(player.sprite.x + 17, player.sprite.y + 21);
+            // if (Math.abs(getPosFromTile(posInTile.x, posInTile.y).y - player.sprite.y) < 50) {
+            //     player.sprite.y = getPosFromTile(posInTile.x, posInTile.y).y - TILE_WIDTH*0.5;
+            // }
 
         }
         else if (cursors.left.isDown) {
