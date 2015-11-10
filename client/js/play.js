@@ -3,6 +3,7 @@ var TILE_HEIGHT = 40;
 var EASY_ENEMIES_SPEED = 50;
 var NORMAL_ENEMIES_SPEED = 35;
 var PLAYER_SPEED = 100;
+var lastTime = 0;
 function BomberMan(Id, game, x, y) {
     this.Id = Id;
     this.game = game;
@@ -12,6 +13,7 @@ function BomberMan(Id, game, x, y) {
     this.power = 1;
 }
 function easyEnemyMovement(easyEnemy, speed) {
+    easyEnemy.animations.play('walk');
     if (easyEnemy.body.blocked.left) {
         easyEnemy.body.velocity.x = speed;
     }
@@ -85,6 +87,20 @@ function playerDeath(sprite, enemy) {
         sprite.body.velocity.x = 0;
         sprite.body.velocity.y = 0;
         sprite.alive = false;
+        game.time.events.add(Phaser.Timer.SECOND, function() {
+            sprite.kill();   
+        })
+    }
+}
+function enemyDeath(bombSprite, enemy) {
+    if (enemy.alive) {
+        enemy.animations.play('die');
+        enemy.body.velocity.x = 0;
+        enemy.body.velocity.y = 0;
+        enemy.alive = false;
+        game.time.events.add(Phaser.Timer.SECOND, function() {
+            enemy.kill();   
+        })
     }
 }
 function playerHitItem(sprite, item) {
@@ -111,29 +127,8 @@ function getRandomCoordinates(){
                 randomY = randY * TILE_HEIGHT;
                 return;
             }
-        }
-function render() {
 }
 
-function removeBlock(x, y) {
-    map.removeTile(x, y, layer);
-    var rand = Math.random();
-    // Create Bomb Item
-    if (rand < 0.1) {
-        items.create(TILE_WIDTH * x, TILE_HEIGHT * y, 'items', 0);
-    }
-    // Create Power Item: Increase range
-    else if (rand < 0.2) {
-        items.create(TILE_WIDTH * x, TILE_HEIGHT * y, 'items', 1);
-    }
-    // Create increasing speed Item
-    else if (rand < 0.3) {
-        items.create(TILE_WIDTH * x, TILE_HEIGHT *y, 'items', 2);
-    }
-    else {
-        map.putTile(240, x, y, layer);
-    }
-}
 function Bomb(power, pos_x, pos_y) {
     var pos = getPosFromTile(pos_x, pos_y);
     var bomb = bombs.create(pos.x, pos.y, 'bomb');
@@ -312,10 +307,6 @@ function bomb_exploision_end(bombs_exploision, destroyed_blocks) {
     bombs_exploision.removeAll(true); // Remove then destroy
 }
 
-function player_dead() {
-    console.log('Player is deaded');
-}
-
 function explosion_tail(posInTile_x, posIntile_y, direction) {
     map.removeTile(posInTile_x, posIntile_y, layer);
     var rand = Math.random();
@@ -382,13 +373,6 @@ var playState = {
         map.setCollisionByExclusion([240], true, layer);
         layer.resizeWorld();
 
-        // Player
-        //var player_sprite = game.add.sprite(40, 40, 'bomberman');
-
-
-        // Text output
-        //bmpText = game.add.bitmapText(150, 10, 'carrier_command', player.id + ' is playing', 16);
-
         // Bomb
         bombs = game.add.group();
         bombs.enableBody = true;
@@ -408,7 +392,7 @@ var playState = {
         easyenemies.setAll('body.velocity.x', EASY_ENEMIES_SPEED);
         easyenemies.setAll('body.velocity.y', EASY_ENEMIES_SPEED);
         easyenemies.callAll('animations.add', 'animations', 'walk', [0, 1, 2], 5, false);
-        easyenemies.callAll('animations.add', 'animations', 'die', [3, 4, 5, 6, 7], 5, false);
+        easyenemies.callAll('animations.add', 'animations', 'die', [3, 4, 5, 6, 7], 3, false);
 
         // Normal Enemies
         normalenemies = game.add.group();
@@ -421,7 +405,7 @@ var playState = {
         normalenemies.setAll('body.velocity.x', NORMAL_ENEMIES_SPEED);
         normalenemies.setAll('body.velocity.y', NORMAL_ENEMIES_SPEED);
         normalenemies.callAll('animations.add', 'animations', 'walk', [8, 9, 10], 5, false);
-        normalenemies.callAll('animations.add', 'animations', 'die', [11, 12, 13], 5, false);
+        normalenemies.callAll('animations.add', 'animations', 'die', [11, 12, 13], 3, false);
 
         // Items 
         items = game.add.group();
@@ -447,6 +431,15 @@ var playState = {
         items.create(120, 40, 'items', 2);
 	},
 	update: function () {
+        if (!player.sprite.alive) {
+            if (game.time.time - lastTime > 2000) {
+                this.finish();
+                return;                
+            }
+        }
+        else {
+            lastTime = game.time.time;
+        }
         var pos = {x:0, y:0};
         pos.x = this.math.snapToFloor(Math.floor(player.sprite.x), TILE_WIDTH) / TILE_WIDTH;
         pos.y = this.math.snapToFloor(Math.floor(player.sprite.y), TILE_WIDTH) / TILE_WIDTH;
@@ -460,26 +453,22 @@ var playState = {
         game.physics.arcade.overlap(bombs, bombs_exploision, bomb_explosion_chain, null, this);
 
         // OVERLAP
-
+        game.physics.arcade.overlap(bombs_exploision, easyenemies, enemyDeath, null, this);
+        game.physics.arcade.overlap(bombs_exploision, normalenemies, enemyDeath, null, this);        
         game.physics.arcade.overlap(player.sprite, easyenemies, playerDeath, null, this);
         game.physics.arcade.overlap(player.sprite, normalenemies, playerDeath, null, this);
         game.physics.arcade.overlap(player.sprite, items, playerHitItem, null, this);
 
         // Easy enemies
-        easyenemies.callAll('play', null, 'walk');
-        easyenemies.forEach(easyEnemyMovement, this, true, EASY_ENEMIES_SPEED);
+        easyenemies.forEachAlive(easyEnemyMovement, this, EASY_ENEMIES_SPEED);
 
         //Normal enemies
-        normalenemies.callAll('play', null, 'walk');
-        normalenemies.forEach(normalEnemyMovement, this, true, player);
+        normalenemies.forEachAlive(normalEnemyMovement, this, player);
 
         player.sprite.body.velocity.x = 0;
         player.sprite.body.velocity.y = 0;
 
-
         if (!player.sprite.alive) {
-            player.sprite.animations.play('die');
-        }
 
         else if (cursors.right.isDown) {
             //  Move to the right
@@ -488,7 +477,6 @@ var playState = {
 
         }
         else if (cursors.left.isDown) {
-        
             player.sprite.body.velocity.x = -player.speed;
             player.sprite.animations.play('left');
         }
@@ -516,6 +504,7 @@ var playState = {
                 //b.clock.pause();
             }
         }
+
 	},
 	finish: function () {
 		game.state.start('finish');
