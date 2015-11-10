@@ -4,11 +4,13 @@ var EASY_ENEMIES_SPEED = 50;
 var NORMAL_ENEMIES_SPEED = 35;
 var PLAYER_SPEED = 100;
 var lastTime = 0;
+
+var test =0 ;
 function BomberMan(Id, game, x, y) {
     this.Id = Id;
     this.game = game;
     this.sprite = game.add.sprite(x, y, 'bomberman');
-    this.numberOfBomb = 1;
+    this.numberOfBomb = 10;
     this.bomb_available = 0;
     this.speed = PLAYER_SPEED;
     this.power = 1;
@@ -162,6 +164,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
     duration = 500;
 
     bomb.kill();
+    //bomb.destroy();
     if (!isTimeUp) {
         bomb.clock.pause();
     }
@@ -323,17 +326,17 @@ function explosion_tail(posInTile_x, posIntile_y, direction) {
     var rand = Math.random();
     map.putTile(240, posInTile_x, posIntile_y, layer);
     // Create Bomb Item
-    if (rand < 0.2) {
-        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 0);
-    }
-    // Create Power Item: Increase range
-    else if (rand < 0.4) {
-        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 1);
-    }
-    // Create increasing speed Item
-    else if (rand < 0.6) {
-        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 2);
-    }
+    // if (rand < 0.2) {
+    //     items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 0);
+    // }
+    // // Create Power Item: Increase range
+    // else if (rand < 0.4) {
+    //     items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 1);
+    // }
+    // // Create increasing speed Item
+    // else if (rand < 0.6) {
+    //     items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 2);
+    // }
     // else {
     //     map.putTile(240, posInTile_x, posIntile_y, layer);
     // }
@@ -515,10 +518,12 @@ var playState = {
         if (game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR)) {
             var exist = {e:false};
             bombs.forEachAlive(placeBombIfNotExist, this, pos.x, pos.y, exist);
+            console.log('len bombs = ' + bombs.length);
             if (!exist.e) {
                 if (player.bomb_available < player.numberOfBomb) {
                     var b = Bomb(player.power, pos.x, pos.y);
                     player.bomb_available ++;
+                    console.log(test++);
                 }
             }
         }
