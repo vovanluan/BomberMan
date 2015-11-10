@@ -4,7 +4,7 @@ var chooseModeState = {
 		game.add.button(360, 300, 'playAgainstBot', this.playAgainstBot, this);
 	},
 	playOnline: function() {
-		game.state.start('playOnline');
+		game.state.start('chooseRoom');
 	},
 	playAgainstBot: function () {
 		game.state.start('playAgainstBot');

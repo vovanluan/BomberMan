@@ -374,6 +374,8 @@ function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
 
 var playOnlineState= {
 	create:function () {
+        console.log("log from play online "+room);
+
         game.physics.startSystem(Phaser.Physics.ARCADE);
         
         // Map

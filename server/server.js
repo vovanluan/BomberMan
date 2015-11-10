@@ -12,10 +12,20 @@ app.get('/', function(req, res){
 
 io.on('connection',function(socket){
 	console.log('a user connected');
-	socket.on('update', function(msg){
-	    console.log('message: ' + msg);
-	    io.emit("notify",msg);
+
+	//handle push from room1 player
+	socket.on('updateRoom1', function(msg){
+	    console.log('messageRoom1: ' + msg);
+	    io.emit("notifyRoom1",msg);
   	});
+
+  	//handle push from room2 player
+  	socket.on('updateRoom2', function(msg){
+	    console.log('messageRoom2: ' + msg);
+	    io.emit("notifyRoom2",msg);
+  	});
+
+  	//handle disconnect
 	socket.on('disconnect',function () {
 		console.log("user disconnect");
 	})
