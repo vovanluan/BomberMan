@@ -1,18 +1,19 @@
-/*function BomberMan(Id, game){
+var TILE_WIDTH = 40;
+var TILE_HEIGHT = 40;
+var EASY_ENEMIES_SPEED = 50;
+var NORMAL_ENEMIES_SPEED = 35;
+var PLAYER_SPEED = 100;
+
+function BomberMan(Id, game, x, y) {
     this.Id = Id;
     this.game = game;
-    this.bomberman = game.add.sprite(40, 40, 'bomberman');
-}*/
-// var welcome = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload1, create: create1});
-// function preload1() {
-//     welcome.load.image('sky', 'assets/images/sky.png');
-// }
+    this.sprite = game.add.sprite(x, y, 'bomberman');
+    this.numberOfBomb = 1;
+    this.speed = PLAYER_SPEED;
+    this.power = 1;
+}
+var game = new Phaser.Game(1000, 600, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
 
-// function create1() {
-//     welcome.add.sprite(0, 0,' sky');
-// }
-
-var game = new Phaser.Game(600, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 function preload() {
 	
@@ -22,9 +23,8 @@ function preload() {
 	game.load.image('tiles', 'assets/tilemaps/tiles/tileset.png');
 
     //Load spritesheet
-    game.load.spritesheet('bomberman', 'assets/images/Bomberman2.png', 58.67, 43);
-    game.load.spritesheet('items', 'assets/images/Items.png');
-    game.load.spritesheet('bombexplosion', 'assets/images/Bomb and Explosions.png');
+
+
     game.load.spritesheet('bomb', 'assets/images/bomb.png', 35, 35, 3);
 
     // Font
@@ -35,53 +35,64 @@ function preload() {
     game.load.image('bomb_exploision1', 'assets/images/bomb_exploision1.png');
     game.load.image('bomb_exploision2', 'assets/images/bomb_exploision2.png');
 
-    game.load.image('sky', 'assets/images/sky.png');
+
+    //Fix size player
+    game.load.spritesheet('bomberman', 'assets/images/BomberMan_Luan.png', 34, 42, 42, 0, 26);
+
+    game.load.spritesheet('items', 'assets/images/Items.png', 42, 42, 16, 4, 4);
+    game.load.spritesheet('bombexplosion', 'assets/images/Bomb&Explosions.png');
+    game.load.spritesheet('easyenemies', 'assets/images/Enemies.png', 36, 32, 16, 0, 24);
 
 }
 
 var map;
 var layer;
 var cursors;
-var player; // Class
+
+
 var bpmText;
 var bombs;
 var tile_size = 40;
 var space_keyboard;
 var bombs_exploision;
 
+var player;
+var booms;
+var items;
+var easyenemies;
+var normalenemies;
+var randomX;
+var randomY;
+
+
+//debug
+var style = { font: "20px Arial", fill: "#ff0044", align: "center" };
+var text;
+
+
 function create() {
+
 
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
     
-    game.add.sprite(0, 0, 'sky');
-    
     // Map
-	map = game.add.tilemap('level1', 40, 40);
+	
+
+	map = game.add.tilemap('level1', TILE_WIDTH, TILE_HEIGHT);
+
+    //  Now add in the tileset
     map.addTilesetImage('tiles');
     layer = map.createLayer(0);
     map.setCollisionByExclusion([240], true, layer);
     layer.resizeWorld();
 
     // Player
-    var player_sprite = game.add.sprite(40, 40, 'bomberman');
-    
-    game.physics.arcade.enable(player_sprite);
-    player_sprite.body.setSize(40, 40, 0, 0);
-    player_sprite.body.collideWorldBounds = true;
+    //var player_sprite = game.add.sprite(40, 40, 'bomberman');
 
-    player_sprite.animations.add('right', [3, 17, 31], 5, false);
-    player_sprite.animations.add('left', [1, 15, 29], 5, false);
-    player_sprite.animations.add('up', [2, 16, 30], 5, false);
-    player_sprite.animations.add('down', [0, 14, 28], 5, false);
-    player = new Player('tri', player_sprite);
-
-    
-    // Input
-    cursors = game.input.keyboard.createCursorKeys();
 
     // Text output
-    bmpText = game.add.bitmapText(150, 10, 'carrier_command', player.name + ' is playing', 16);
+    //bmpText = game.add.bitmapText(150, 10, 'carrier_command', player.id + ' is playing', 16);
 
     // Bomb
     bombs = game.add.group();
@@ -90,6 +101,57 @@ function create() {
     bombs_exploision.enableBody = true;
     //Bomb(1, 2, 1);
     //game.input.keyboard.isDown(Phaser.KeyCode.BACKSPACE);
+
+    // Ease Enemies
+    easyenemies = game.add.group();
+    easyenemies.enableBody = true;
+    var numEasyEnemies = Math.floor(Math.random() * 2 + 2);
+    for (var i = 0; i < numEasyEnemies; i++) {
+        getRandomCoordinates();
+        easyenemies.create(randomX, randomY, 'easyenemies');
+    }
+    easyenemies.setAll('body.velocity.x', EASY_ENEMIES_SPEED);
+    easyenemies.setAll('body.velocity.y', EASY_ENEMIES_SPEED);
+    easyenemies.callAll('animations.add', 'animations', 'walk', [0, 1, 2], 5, false);
+    easyenemies.callAll('animations.add', 'animations', 'die', [3, 4, 5, 6, 7], 5, false);
+
+    // Normal Enemies
+    normalenemies = game.add.group();
+    normalenemies.enableBody = true;
+    var numNormalEnemies = Math.floor(Math.random() * 2 + 1);
+    for (var t = 0; t < numNormalEnemies; t++) {
+        getRandomCoordinates();
+        normalenemies.create(randomX, randomY, 'easyenemies', 8);
+    }
+    normalenemies.setAll('body.velocity.x', NORMAL_ENEMIES_SPEED);
+    normalenemies.setAll('body.velocity.y', NORMAL_ENEMIES_SPEED);
+    normalenemies.callAll('animations.add', 'animations', 'walk', [8, 9, 10], 5, false);
+    normalenemies.callAll('animations.add', 'animations', 'die', [11, 12, 13], 5, false);
+
+    // Items 
+    items = game.add.group();
+    items.enableBody = true;
+    items.setAll('')
+
+    // Player
+    player = new BomberMan(0, game, 40, 40);
+    game.physics.arcade.enable(player.sprite);
+    // Fix size player
+    player.sprite.body.setSize(34, 34, 0, 4);
+    player.sprite.body.collideWorldBounds = true;
+
+    player.sprite.animations.add('right', [3, 17, 31], 5, false);
+    player.sprite.animations.add('left', [1, 15, 29], 5, false);
+    player.sprite.animations.add('up', [2, 16, 30], 5, false);
+    player.sprite.animations.add('down', [0, 14, 28], 5, false);
+    player.sprite.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
+
+    layer.debug = true;
+
+    cursors = game.input.keyboard.createCursorKeys();
+    items.create(120, 40, 'items', 2);
+    
+
 }
 
 
@@ -98,40 +160,64 @@ function update() {
 	pos.x = this.math.snapToFloor(Math.floor(player.sprite.x), tile_size) / tile_size;
 	pos.y = this.math.snapToFloor(Math.floor(player.sprite.y), tile_size) / tile_size;
 
-
+    game.physics.arcade.collide(easyenemies, layer);
+    game.physics.arcade.collide(normalenemies, layer);
     game.physics.arcade.collide(player.sprite, layer);
+    
     game.physics.arcade.collide(bombs, player.sprite);
     game.physics.arcade.overlap(bombs_exploision, player.sprite, player_dead, null, this);
     game.physics.arcade.overlap(bombs, bombs_exploision, bomb_explosion_chain, null, this);
 
+    // OVERLAP
+
+    game.physics.arcade.overlap(player.sprite, easyenemies, playerHitEnemy, null, this);
+    game.physics.arcade.overlap(player.sprite, normalenemies, playerHitEnemy, null, this);
+    game.physics.arcade.overlap(player.sprite, items, playerHitItem, null, this);
+
+    // Easy enemies
+    easyenemies.callAll('play', null, 'walk');
+    easyenemies.forEach(easyEnemyMovement, this, true, EASY_ENEMIES_SPEED);
+
+    //Normal enemies
+    normalenemies.callAll('play', null, 'walk');
+    normalenemies.forEach(normalEnemyMovement, this, true, player);
+
     player.sprite.body.velocity.x = 0;
     player.sprite.body.velocity.y = 0;
 
-    if (cursors.right.isDown)
-    {
-        //  Move to the left
-        player.sprite.body.velocity.x = +150;
-        player.sprite.animations.play('right');
-        //player.animations.play('left');
-    }
-    else if (cursors.left.isDown)
-    {
-        //  Move to the left
-        player.sprite.body.velocity.x = -150;
-        player.sprite.animations.play('left');
 
-        //player.animations.play('left');
+    if (!player.sprite.alive) {
+        player.sprite.animations.play('die');
     }
-    else if (cursors.up.isDown)
-    {
+
+//     else if (cursors.up.isDown)
+//     {
+//         //  Move to the left
+//         player.sprite.body.velocity.y = -150;
+//         player.sprite.animations.play('up');
+// =======
+    else if (cursors.right.isDown) {
+        //  Move to the right
+        player.sprite.body.velocity.x = player.speed;
+        player.sprite.animations.play('right');
+
+    }
+    else if (cursors.left.isDown) {
         //  Move to the left
-        player.sprite.body.velocity.y = -150;
+// <<<<<<< HEAD
+//         player.sprite.body.velocity.y = +150;
+// =======
+        player.sprite.body.velocity.x = -player.speed;
+        player.sprite.animations.play('left');
+    }
+    else if (cursors.up.isDown) {
+        //  Move up
+        player.sprite.body.velocity.y = -player.speed;
         player.sprite.animations.play('up');
     }
-    else if (cursors.down.isDown)
-    {
-        //  Move to the left
-        player.sprite.body.velocity.y = +150;
+    else if (cursors.down.isDown) {
+        //  Move down
+        player.sprite.body.velocity.y = player.speed;
         player.sprite.animations.play('down');
     }
     else {
@@ -139,11 +225,88 @@ function update() {
         player.sprite.frame = 0;
     }
 
+
     if (game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR)) {
     	var exist = {e:false};
     	bombs.forEachAlive(placeBombIfNotExist, this, pos.x, pos.y, exist);
     	if (!exist.e)
     		Bomb(5, pos.x, pos.y);
+    }
+}
+function easyEnemyMovement(easyEnemy, speed) {
+    if (easyEnemy.body.blocked.left) {
+        easyEnemy.body.velocity.x = speed;
+    }
+    else if (easyEnemy.body.blocked.right) {
+        easyEnemy.body.velocity.x = -speed;
+    }
+    else if (easyEnemy.body.blocked.up) {
+        easyEnemy.body.velocity.y = speed;
+    }
+    else if (easyEnemy.body.blocked.down) {
+        easyEnemy.body.velocity.y = -speed;
+    }
+}
+
+function normalEnemyMovement(normalEnemy, player) {
+    var normalEnemyTile = map.getTileWorldXY(normalEnemy.body.position.x, normalEnemy.body.position.y, 40, 40, layer);
+    var playerTile = map.getTileWorldXY(player.sprite.body.position.x, player.sprite.body.position.y, 40, 40, layer);
+    // Enemy and player are in the same column
+    var canEnemySeePlayer = true;
+    if (normalEnemyTile.x == playerTile.x) {
+        if (normalEnemyTile.y < playerTile.y) {
+            for (var i = normalEnemyTile.y; i < playerTile.y; i++) {
+                if (map.getTile(normalEnemyTile.x, i).index != 240) {
+                    canEnemySeePlayer = false;
+                    break;
+                }
+            }
+        }
+        else {
+            for (var i = playerTile.y; i < normalEnemyTile.y; i++) {
+                if (map.getTile(normalEnemyTile.x, i).index != 240) {
+                    canEnemySeePlayer = false;
+                    break;
+                }
+            }   
+        }
+    }
+    // Enemy and player are in the same row
+    else if (normalEnemyTile.y == playerTile.y) {
+        if (normalEnemyTile.x < playerTile.x) {
+            for (var i = normalEnemyTile.x; i < playerTile.x; i++) {
+                if (map.getTile(i, normalEnemyTile.y).index != 240) {
+                    canEnemySeePlayer = false;
+                    break;
+                }
+            }            
+        }
+        else {
+            for (var i = playerTile.x; i < normalEnemyTile.x; i++) {
+                if (map.getTile(i, normalEnemyTile.y).index != 240) {
+                    canEnemySeePlayer = false;
+                    break;
+                }
+            }            
+        }
+    }
+    else {
+        canEnemySeePlayer = false;
+    }
+
+    if (canEnemySeePlayer) {
+        game.physics.arcade.moveToObject(normalEnemy, player.sprite, NORMAL_ENEMIES_SPEED);
+    }
+    else {
+        easyEnemyMovement(normalEnemy, NORMAL_ENEMIES_SPEED);
+    }
+}
+function playerHitEnemy(sprite, enemy) {
+    if (sprite.alive) {
+        sprite.animations.play('die');
+        sprite.body.velocity.x = 0;
+        sprite.body.velocity.y = 0;
+        sprite.alive = false;
     }
 
 }
@@ -155,6 +318,31 @@ function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
 
 }
 
+function playerHitItem(sprite, item) {
+    if (item.frame == 0) {
+        player.numberOfBomb += 1;
+    }
+    else if (item.frame == 1) {
+        player.power += 1;
+    }
+    else if (item.frame == 2) {
+        player.speed += 50;
+    }
+    item.kill();
+    map.putTile(240, item.body.position.x, item.body.position.y, layer);
+}
+function getRandomCoordinates(){
+	var randX = Math.floor((Math.random() * (game.world.width/TILE_WIDTH)));
+	var randY = Math.floor((Math.random() * (game.world.height/TILE_HEIGHT)));
+	var tileId = map.getTile(randX,randY,layer).index;
+	if (tileId != 240 || (randX == 1 && randY == 1)) {
+	    getRandomCoordinates();
+	} else {
+	    randomX = randX * TILE_WIDTH;
+	    randomY = randY * TILE_HEIGHT;
+	    return;
+	}
+}
 function render() {
 
 }
@@ -181,6 +369,7 @@ function Bomb(power, pos_x, pos_y) {
     bomb.animations.play('bomb_static');
     game.time.events.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb);
 }
+
 
 function BombExplosion(power, posInTile_x, posInTile_y, bomb) {
 	duration = 500;
@@ -360,4 +549,24 @@ function explosion_tail(posInTile_x, posIntile_y, direction) {
 
 function bomb_explosion_chain(bomb, bomb_exploision) {
 	BombExplosion(1, 1, 1, bomb);
+}
+
+function removeBlock(x, y) {
+    map.removeTile(x, y, layer);
+    var rand = Math.random();
+    // Create Bomb Item
+    if (rand < 0.1) {
+        items.create(TILE_WIDTH * x, TILE_HEIGHT * y, 'items', 0);
+    }
+    // Create Power Item: Increase range
+    else if (rand < 0.2) {
+        items.create(TILE_WIDTH * x, TILE_HEIGHT * y, 'items', 1);
+    }
+    // Create increasing speed Item
+    else if (rand < 0.3) {
+        items.create(TILE_WIDTH * x, TILE_HEIGHT *y, 'items', 2);
+    }
+    else {
+        map.putTile(240, x, y, layer);
+    }
 }
