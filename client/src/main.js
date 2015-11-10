@@ -366,7 +366,11 @@ function Bomb(power, pos_x, pos_y) {
     bomb.anchor.x = 0.5;
     bomb.anchor.y = 0.5;
     bomb.animations.play('bomb_static');
-    game.time.events.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb);
+    //game.time.events.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb);
+    var timer = new Phaser.Timer(game, true);
+    //timer.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb);
+    timer.destroy();
+
 }
 
 

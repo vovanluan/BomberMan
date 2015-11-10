@@ -146,15 +146,27 @@ function Bomb(power, pos_x, pos_y) {
     bomb.anchor.x = 0.5;
     bomb.anchor.y = 0.5;
     bomb.animations.play('bomb_static');
-    game.time.events.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb);
+    
+    bomb.power = power;
+    bomb.posInTile_x = pos_x;
+    bomb.posInTile_y = pos_y;
+
+    var clock = game.time.create(false);
+    clock.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb, true);
+    clock.start();
+    bomb.clock = clock;
+
+    return bomb;
 }
 
 
-function BombExplosion(power, posInTile_x, posInTile_y, bomb) {
+function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
     duration = 500;
 
     bomb.kill();
-
+    if (!isTimeUp) {
+        bomb.clock.pause();
+    }
     
     game.physics.arcade.enable(bombs_exploision);
     // Bomb kernel
@@ -344,8 +356,10 @@ function explosion_tail(posInTile_x, posIntile_y, direction) {
 }
 
 function bomb_explosion_chain(bomb, bomb_exploision) {
-    BombExplosion(1, 1, 1, bomb);
+
+    BombExplosion(bomb.power, bomb.posInTile_x, bomb.posInTile_y, bomb);
 }
+
 function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
     var posInWorld = getPosFromTile(posInTile_x, posInTile_y);
     if (posInWorld.x == child.x && posInWorld.y == child.y) {
@@ -360,7 +374,6 @@ var playState = {
         
         // Map
         
-
         map = game.add.tilemap('level1', TILE_WIDTH, TILE_HEIGHT);
 
         //  Now add in the tileset
@@ -468,12 +481,6 @@ var playState = {
             player.sprite.animations.play('die');
         }
 
-    //     else if (cursors.up.isDown)
-    //     {
-    //         //  Move to the left
-    //         player.sprite.body.velocity.y = -150;
-    //         player.sprite.animations.play('up');
-    // =======
         else if (cursors.right.isDown) {
             //  Move to the right
             player.sprite.body.velocity.x = player.speed;
@@ -481,10 +488,7 @@ var playState = {
 
         }
         else if (cursors.left.isDown) {
-            //  Move to the left
-    // <<<<<<< HEAD
-    //         player.sprite.body.velocity.y = +150;
-    // =======
+        
             player.sprite.body.velocity.x = -player.speed;
             player.sprite.animations.play('left');
         }
@@ -507,8 +511,10 @@ var playState = {
         if (game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR)) {
             var exist = {e:false};
             bombs.forEachAlive(placeBombIfNotExist, this, pos.x, pos.y, exist);
-            if (!exist.e)
-                Bomb(5, pos.x, pos.y);
+            if (!exist.e) {
+                var b = Bomb(5, pos.x, pos.y);
+                //b.clock.pause();
+            }
         }
 	},
 	finish: function () {
