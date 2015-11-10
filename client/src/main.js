@@ -2,11 +2,14 @@ var TILE_WIDTH = 40;
 var TILE_HEIGHT = 40;
 var EASY_ENEMIES_SPEED = 50;
 var NORMAL_ENEMIES_SPEED = 35;
-
-function Enemy(Id, game, x, y) {
+var PLAYER_SPEED = 100;
+function BomberMan(Id, game, x, y) {
     this.Id = Id;
     this.game = game;
-    this.enemy = game.add.sprite(x, y, 'easyenemies');
+    this.sprite = game.add.sprite(x, y, 'bomberman');
+    this.numberOfBomb = 1;
+    this.speed = PLAYER_SPEED;
+    this.power = 1;
 }
 var game = new Phaser.Game(1000, 600, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
 
@@ -25,7 +28,7 @@ function preload() {
     //Fix size player
     game.load.spritesheet('bomberman', 'assets/images/BomberMan_Luan.png', 34, 42, 42, 0, 26);
 
-    game.load.spritesheet('items', 'assets/images/Items.png');
+    game.load.spritesheet('items', 'assets/images/Items.png', 42, 42, 16, 4, 4);
     game.load.spritesheet('bombexplosion', 'assets/images/Bomb&Explosions.png');
     game.load.spritesheet('easyenemies', 'assets/images/Enemies.png', 36, 32, 16, 0, 24);
 }
@@ -35,10 +38,12 @@ var layer;
 var cursors;
 var player;
 var booms;
+var items;
 var easyenemies;
 var normalenemies;
 var randomX;
 var randomY;
+
 
 //debug
 var style = { font: "20px Arial", fill: "#ff0044", align: "center" };
@@ -89,33 +94,42 @@ function create() {
     normalenemies.callAll('animations.add', 'animations', 'walk', [8, 9, 10], 5, false);
     normalenemies.callAll('animations.add', 'animations', 'die', [11, 12, 13], 5, false);
 
-    // Player
-    player = game.add.sprite(TILE_WIDTH, TILE_HEIGHT, 'bomberman');
-    game.physics.arcade.enable(player);
-    // Fix size player
-    player.body.setSize(34, 34, 0, 4);
-    player.body.collideWorldBounds = true;
+    // Items 
+    items = game.add.group();
+    items.enableBody = true;
+    items.setAll('')
 
-    player.animations.add('right', [3, 17, 31], 5, false);
-    player.animations.add('left', [1, 15, 29], 5, false);
-    player.animations.add('up', [2, 16, 30], 5, false);
-    player.animations.add('down', [0, 14, 28], 5, false);
-    player.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
+    // Player
+    player = new BomberMan(0, game, 40, 40);
+    game.physics.arcade.enable(player.sprite);
+    // Fix size player
+    player.sprite.body.setSize(34, 34, 0, 4);
+    player.sprite.body.collideWorldBounds = true;
+
+    player.sprite.animations.add('right', [3, 17, 31], 5, false);
+    player.sprite.animations.add('left', [1, 15, 29], 5, false);
+    player.sprite.animations.add('up', [2, 16, 30], 5, false);
+    player.sprite.animations.add('down', [0, 14, 28], 5, false);
+    player.sprite.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
 
     layer.debug = true;
 
     cursors = game.input.keyboard.createCursorKeys();
+    items.create(120, 40, 'items', 2);
+    
 }
 
 function update() {
 
     game.physics.arcade.collide(easyenemies, layer);
     game.physics.arcade.collide(normalenemies, layer);
-    game.physics.arcade.collide(player, layer);
+    game.physics.arcade.collide(player.sprite, layer);
 
-    // Overlap between enemies and player
-    game.physics.arcade.overlap(player, easyenemies, enemyHitPlayer, null, this);
-    game.physics.arcade.overlap(player, normalenemies, enemyHitPlayer, null, this);
+    // OVERLAP
+
+    game.physics.arcade.overlap(player.sprite, easyenemies, playerHitEnemy, null, this);
+    game.physics.arcade.overlap(player.sprite, normalenemies, playerHitEnemy, null, this);
+    game.physics.arcade.overlap(player.sprite, items, playerHitItem, null, this);
 
     // Easy enemies
     easyenemies.callAll('play', null, 'walk');
@@ -125,39 +139,35 @@ function update() {
     normalenemies.callAll('play', null, 'walk');
     normalenemies.forEach(normalEnemyMovement, this, true, player);
 
-    player.body.velocity.x = 0;
-    player.body.velocity.y = 0;
+    player.sprite.body.velocity.x = 0;
+    player.sprite.body.velocity.y = 0;
 
-    if (cursors.right.isDown)
-    {
+    if (!player.sprite.alive) {
+        player.sprite.animations.play('die');
+    }
+    else if (cursors.right.isDown) {
         //  Move to the right
-        player.body.velocity.x = +100;
-        player.animations.play('right');
-        //player.animations.play('left');
+        player.sprite.body.velocity.x = player.speed;
+        player.sprite.animations.play('right');
     }
-    else if (cursors.left.isDown)
-    {
+    else if (cursors.left.isDown) {
         //  Move to the left
-        player.body.velocity.x = -100;
-        player.animations.play('left');
+        player.sprite.body.velocity.x = -player.speed;
+        player.sprite.animations.play('left');
     }
-    else if (cursors.up.isDown)
-    {
+    else if (cursors.up.isDown) {
         //  Move up
-        player.body.velocity.y = -100;
-        player.animations.play('up');
+        player.sprite.body.velocity.y = -player.speed;
+        player.sprite.animations.play('up');
     }
-    else if (cursors.down.isDown)
-    {
+    else if (cursors.down.isDown) {
         //  Move down
-        player.body.velocity.y = +100;
-        player.animations.play('down');
+        player.sprite.body.velocity.y = player.speed;
+        player.sprite.animations.play('down');
     }
     else {
-        player.animations.stop();
-
-        player.frame = 0;
-
+        player.sprite.animations.stop();
+        player.sprite.frame = 0;
     }
 }
 function easyEnemyMovement(easyEnemy, speed) {
@@ -177,7 +187,7 @@ function easyEnemyMovement(easyEnemy, speed) {
 
 function normalEnemyMovement(normalEnemy, player) {
     var normalEnemyTile = map.getTileWorldXY(normalEnemy.body.position.x, normalEnemy.body.position.y, 40, 40, layer);
-    var playerTile = map.getTileWorldXY(player.body.position.x, player.body.position.y, 40, 40, layer);
+    var playerTile = map.getTileWorldXY(player.sprite.body.position.x, player.sprite.body.position.y, 40, 40, layer);
     // Enemy and player are in the same column
     var canEnemySeePlayer = true;
     if (normalEnemyTile.x == playerTile.x) {
@@ -195,7 +205,7 @@ function normalEnemyMovement(normalEnemy, player) {
                     canEnemySeePlayer = false;
                     break;
                 }
-            }            
+            }   
         }
     }
     // Enemy and player are in the same row
@@ -222,14 +232,32 @@ function normalEnemyMovement(normalEnemy, player) {
     }
 
     if (canEnemySeePlayer) {
-        game.physics.arcade.moveToObject(normalEnemy, player, NORMAL_ENEMIES_SPEED);
+        game.physics.arcade.moveToObject(normalEnemy, player.sprite, NORMAL_ENEMIES_SPEED);
     }
     else {
         easyEnemyMovement(normalEnemy, NORMAL_ENEMIES_SPEED);
     }
 }
-function enemyHitPlayer (player, enemy) {
-    player.kill();
+function playerHitEnemy(sprite, enemy) {
+    if (sprite.alive) {
+        sprite.animations.play('die');
+        sprite.body.velocity.x = 0;
+        sprite.body.velocity.y = 0;
+        sprite.alive = false;
+    }
+}
+function playerHitItem(sprite, item) {
+    if (item.frame == 0) {
+        player.numberOfBomb += 1;
+    }
+    else if (item.frame == 1) {
+        player.power += 1;
+    }
+    else if (item.frame == 2) {
+        player.speed += 50;
+    }
+    item.kill();
+    map.putTile(240, item.body.position.x, item.body.position.y, layer);
 }
 function getRandomCoordinates(){
             var randX = Math.floor((Math.random() * (game.world.width/TILE_WIDTH)));
@@ -244,5 +272,23 @@ function getRandomCoordinates(){
             }
         }
 function render() {
-    game.debug.body(player)
+}
+
+function removeBlock(x, y) {
+    map.removeTile(x, y, layer);
+    var rand = Math.random();
+    // Create Bomb Item
+    if (rand < 0.1) {
+        items.create(TILE_WIDTH * x, TILE_HEIGHT * y, 'items', 0);
+    }
+    // Create Power Item: Increase range
+    else if (rand < 0.2) {
+        items.create(TILE_WIDTH * x, TILE_HEIGHT * y, 'items', 1);
+    }
+    else if (rand < 0.3) {
+        items.create(TILE_WIDTH * x, TILE_HEIGHT *y, 'items', 2);
+    }
+    else {
+        map.putTile(240, x, y, layer);
+    }
 }
