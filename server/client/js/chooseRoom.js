@@ -18,6 +18,6 @@ var chooseRoomState = {
 		socket.on("start game on client", this.startGame);
 	}, 
 	startGame: function (data) {
-		game.state.start('playOnline', true, false,  data.players);
+		game.state.start('playOnline', true, false,  data.players, data.map);
 	}
 }

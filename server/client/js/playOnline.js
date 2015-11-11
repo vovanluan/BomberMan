@@ -373,7 +373,9 @@ function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
 }
 
 var playOnlineState= {
-    init: function
+    init: function (players) {
+        this.players = players;
+    },
 	create:function () {
         console.log("log from play online "+room);
 
