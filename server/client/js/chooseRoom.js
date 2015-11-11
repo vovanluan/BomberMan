@@ -9,13 +9,11 @@ var chooseRoomState = {
 	},
 	room1:function () {
 		room = "room1";
-		socket.emit("start game on server");
-		socket.on("start game on client", this.startGame);
+		game.state.start('playOnline');
 	},
 	room2: function(){
 		room = "room2";
-		socket.emit("start game on server");
-		socket.on("start game on client", this.startGame);
+		game.state.start('playOnline');
 	}, 
 	startGame: function (data) {
 		game.state.start('playOnline', true, false,  data.players, data.map);
