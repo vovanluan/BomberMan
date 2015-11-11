@@ -396,7 +396,6 @@ function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
     if (posInWorld.x == child.x && posInWorld.y == child.y) {
         exist.e = true;
     }
-
 }
 
 var playAgainstBotState = {
