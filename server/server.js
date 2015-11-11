@@ -10,10 +10,25 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/client/index.html');
 });
 
-var numPlayer = 0;
+countPlayer = 0;
+data1 = {id: 1, pos:{x:1,y: 1}};
+data2 = {id: 2, pos:{x:3,y: 1}};
+
 io.on('connection',function(socket){
 	console.log('a user connected');
+	socket.on('requestjoinRoom1', function(msg){
+		countPlayer++;
+			console.log("Here");
+		if (countPlayer == 2) {
+			socket.emit("pendingGame", data2);
+			io.emit("startGame", {data1:data1, data2:data2});
+			socket.emit("startGame", {data1:data1, data2:data2});
+		}
+		else {
 
+			socket.emit("pendingGame", data1);
+		}
+  	});
 	//handle push from room1 player
 	socket.on('updateRoom1', function(msg){
 	    console.log('messageRoom1: ' + msg);
@@ -29,13 +44,13 @@ io.on('connection',function(socket){
   	//handle disconnect
 	socket.on('disconnect',function () {
 		console.log("user disconnect");
+		countPlayer--;
 	});
 
 	socket.on('player_move', function(data) {
-		console.log('Id: '+ data.Id);
-		console.log(data.x + ' - ' + data.y);
+		
 
-		socket.broadcast.emit('server_player_move', data);
+		io.emit('server_player_move', data);
 	});
 })
 

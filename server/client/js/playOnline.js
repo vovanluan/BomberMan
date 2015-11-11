@@ -6,6 +6,7 @@ var PLAYER_SPEED = 100;
 var lastTime = 0;
 
 var test =0 ;
+
 var players;
 
 // Extends Sprite class
@@ -15,6 +16,7 @@ function CreateBomberMan(id, game, posInTile_x, posInTile_y) {
     var bomberMan = players.create(pos.x - TILE_WIDTH/2, pos.y - TILE_WIDTH/2, 'bomberman');
 
     bomberMan.id = id;
+
     bomberMan.game = game;
     bomberMan.numberOfBomb = 10;
     bomberMan.bomb_available = 0;
@@ -397,18 +399,18 @@ function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
         exist.e = true;
     }
 }
+
 var n;
-
-
+var enemy = null;
+var player = null;
 var playOnlineState = {
     create:function () {
-        console.log("log from play online "+room);
-        game.stage.disableVisibilityChange = true;
         game.physics.startSystem(Phaser.Physics.ARCADE);
         
         // Map
-        
+        game.stage.disableVisibilityChange = true;
         map = game.add.tilemap('level1', TILE_WIDTH, TILE_HEIGHT);
+
 
         //  Now add in the tileset
         map.addTilesetImage('tiles');
@@ -427,7 +429,9 @@ var playOnlineState = {
         // Ease Enemies
         easyenemies = game.add.group();
         easyenemies.enableBody = true;
+
         var numEasyEnemies = Math.floor(0);
+
         for (var i = 0; i < numEasyEnemies; i++) {
             getRandomCoordinates();
             easyenemies.create(randomX, randomY, 'easyenemies');
@@ -440,7 +444,9 @@ var playOnlineState = {
         // Normal Enemies
         normalenemies = game.add.group();
         normalenemies.enableBody = true;
+
         var numNormalEnemies = Math.floor(0);
+
         for (var t = 0; t < numNormalEnemies; t++) {
             getRandomCoordinates();
             normalenemies.create(randomX, randomY, 'easyenemies', 8);
@@ -456,41 +462,51 @@ var playOnlineState = {
         items.setAll('')
 
         // Player
+
         players = game.add.group();
         players.enableBody = true;
 
         var d = new Date();
         n = d.getTime();
-        player = CreateBomberMan(n, game, 1, 1);
-        player2 = CreateBomberMan(0, game, 10, 10);
+        
+        
 
         layer.debug = true;
 
         cursors = game.input.keyboard.createCursorKeys();
-        pause_label = game.add.text(game.world.width - 100, 20, 'Pause', { font: '24px Arial', fill: '#fff' });
-        pause_label.inputEnabled = true;
-        pause_label.events.onInputUp.add(function () {
-            game.paused = true;
-           });
-        game.input.onDown.add(function () {
-            game.paused = false;
-        }, self);
-
         
 
-        var data = {Id:player.Id, x:player.x, y:player.y};
-        socket.emit('player_move', data);
-
-        socket.on('server_player_move', function(datas) {
-            console.log('ID='+datas.Id);
-            if (datas.Id != player.Id) {
-                player2.x = datas.x;
-                player2.y = datas.y;
+        socket.on('server_player_move', function(data) {
+            console.log('ID='+data.Id);
+            if (data.Id != player.Id) {
+                enemy.x = data.x;
+                enemy.y = data.y;
             }
         });
 
+
+        //Luan
+        socket.emit("requestjoinRoom1");
+        socket.on("pendingGame", function(data) {
+            player = CreateBomberMan(data.id, game, data.pos.x, data.pos.y);
+        })
+        socket.on("startGame", function (data) {
+            console.log(player.Id, data.data1, data.data2);  
+            if (data.data1.id == player.Id) {
+                enemy = CreateBomberMan(data.data2.id, game, data.data2.pos.x, data.data2.pos.y);
+            }
+            else {
+                enemy = CreateBomberMan(data.data1.id, game, data.data1.pos.x, data.data1.pos.y);  
+                console.log(player.Id);              
+            }
+        })
+
     },
     update: function () {
+
+        if (player == null) {
+            return;
+        }
         if (!player.alive) {
             if (game.time.time - lastTime > 2000) {
                 this.finish();
@@ -501,11 +517,27 @@ var playOnlineState = {
             lastTime = game.time.time;
         }
 
+
         var data = {Id:player.Id, x:player.x, y:player.y};
         socket.emit('player_move', data);
         
 
         var pos = {x:0, y:0};
+// =======
+//         if (enemy != null) {
+//             var lastPosition = enemy.body.position;
+//             socket.on("notifyRoom1", function(data) {
+//                 if (lastPosition.x != data.position.x || lastPosition.y != data.position.y) {
+//                     enemy.body.position.x = data.position.x;
+//                     enemy.body.position.y = data.position.y;
+//                 }
+//             })           
+//         }
+
+//         var pos = {x:0, y:0};
+//         // pos.x = this.math.snapToFloor(Math.floor(player.x+17), TILE_WIDTH) / TILE_WIDTH;
+//         // pos.y = this.math.snapToFloor(Math.floor(player.y+21), TILE_WIDTH) / TILE_WIDTH;
+// >>>>>>> 919164a392e6146d692abe6f424fa80da1cf7fac
         pos = getPosTile(player.x + 17, player.y + 21);
 
         game.physics.arcade.collide(easyenemies, layer);
@@ -538,11 +570,6 @@ var playOnlineState = {
             //  Move to the right
             player.body.velocity.x = player.speed;
             player.animations.play('right');
-            // var posInTile = getPosTile(player.x + 17, player.y + 21);
-            // if (Math.abs(getPosFromTile(posInTile.x, posInTile.y).y - player.y) < 50) {
-            //     player.y = getPosFromTile(posInTile.x, posInTile.y).y - TILE_WIDTH*0.5;
-            // }
-
         }
         else if (cursors.left.isDown) {
             player.body.velocity.x = -player.speed;
@@ -576,6 +603,10 @@ var playOnlineState = {
                 }
             }
         }
+// <<<<<<< HEAD
+// =======
+//         socket.emit('updateRoom1', {id:player.Id, position:player.body.position});
+// >>>>>>> 919164a392e6146d692abe6f424fa80da1cf7fac
 
     },
     finish: function () {
