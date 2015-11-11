@@ -19,8 +19,14 @@ var loadState = {
 	    game.load.image('startGame', 'assets/images/startButton.png');
 	    game.load.image('howToPlay', 'assets/images/howToPlay.png');
 	    game.load.image('playOnline', 'assets/images/playOnline.png');
-	    game.load.image('playAgainstBot', 'assets/images/playAgainstBot.png')	
-	    game.load.image('playAgain', 'assets/images/playAgain.png')	    
+	    game.load.image('playAgainstBot', 'assets/images/playAgainstBot.png');	
+	    game.load.image('playAgain', 'assets/images/playAgain.png');
+	    game.load.image('room1', 'assets/images/room1.png');	    
+	    game.load.image('room2', 'assets/images/room2.png');	    
+	    game.load.image('menu', 'assets/images/menu.png');
+	    game.load.image('chooseModeBackground', 'assets/images/chooseModeBackground.jpg');
+	    game.load.image('chooseRoomBackground', 'assets/images/chooseRoomBackground.jpg');	 
+	    game.load.image('finishBackground', 'assets/images/finishBackground.jpg');	 	       
 
 
 	    //Fix size player

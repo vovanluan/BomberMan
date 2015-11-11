@@ -19,8 +19,8 @@ var loadState = {
 	    game.load.image('startGame', 'assets/images/startButton.png');
 	    game.load.image('howToPlay', 'assets/images/howToPlay.png');
 	    game.load.image('playOnline', 'assets/images/playOnline.png');
-	    game.load.image('playAgainstBot', 'assets/images/playAgainstBot.png')	
-	    game.load.image('playAgain', 'assets/images/playAgain.png')	    
+	    game.load.image('playAgainstBot', 'assets/images/playAgainstBot.png');	
+	    game.load.image('playAgain', 'assets/images/playAgain.png');
 
 
 	    //Fix size player
