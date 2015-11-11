@@ -18,14 +18,11 @@ io.on('connection',function(socket){
 	console.log('a user connected');
 	socket.on('requestjoinRoom1', function(msg){
 		countPlayer++;
-			console.log("Here");
 		if (countPlayer == 2) {
 			socket.emit("pendingGame", data2);
 			io.emit("startGame", {data1:data1, data2:data2});
-			socket.emit("startGame", {data1:data1, data2:data2});
 		}
 		else {
-
 			socket.emit("pendingGame", data1);
 		}
   	});
