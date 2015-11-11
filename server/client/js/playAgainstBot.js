@@ -6,14 +6,29 @@ var PLAYER_SPEED = 100;
 var lastTime = 0;
 
 var test =0 ;
-function BomberMan(Id, game, x, y) {
-    this.Id = Id;
-    this.game = game;
-    this.sprite = game.add.sprite(x, y, 'bomberman');
-    this.numberOfBomb = 10;
-    this.bomb_available = 0;
-    this.speed = PLAYER_SPEED;
-    this.power = 1;
+// Extends Sprite class
+function CreateBomberMan(Id, game, x, y) {
+    var bomberMan = game.add.sprite(x, y, 'bomberman');
+
+    bomberMan.Id = Id;
+    bomberMan.game = game;
+    bomberMan.numberOfBomb = 10;
+    bomberMan.bomb_available = 0;
+    bomberMan.speed = PLAYER_SPEED;
+    bomberMan.power = 1;
+
+    game.physics.arcade.enable(bomberMan);
+    // Fix size player
+    bomberMan.body.setSize(34, 34, 0, 4);
+    bomberMan.body.collideWorldBounds = true;
+
+    bomberMan.animations.add('right', [3, 17, 31], 5, false);
+    bomberMan.animations.add('left', [1, 15, 29], 5, false);
+    bomberMan.animations.add('up', [2, 16, 30], 5, false);
+    bomberMan.animations.add('down', [0, 14, 28], 5, false);
+    bomberMan.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
+
+    return bomberMan;
 }
 function easyEnemyMovement(easyEnemy, speed) {
     easyEnemy.animations.play('walk');
@@ -33,7 +48,7 @@ function easyEnemyMovement(easyEnemy, speed) {
 
 function normalEnemyMovement(normalEnemy, player) {
     var normalEnemyTile = map.getTileWorldXY(normalEnemy.body.position.x, normalEnemy.body.position.y, 40, 40, layer);
-    var playerTile = map.getTileWorldXY(player.sprite.body.position.x, player.sprite.body.position.y, 40, 40, layer);
+    var playerTile = map.getTileWorldXY(player.body.position.x, player.body.position.y, 40, 40, layer);
     // Enemy and player are in the same column
     var canEnemySeePlayer = true;
     if (normalEnemyTile.x == playerTile.x) {
@@ -78,7 +93,7 @@ function normalEnemyMovement(normalEnemy, player) {
     }
 
     if (canEnemySeePlayer) {
-        game.physics.arcade.moveToObject(normalEnemy, player.sprite, NORMAL_ENEMIES_SPEED);
+        game.physics.arcade.moveToObject(normalEnemy, player, NORMAL_ENEMIES_SPEED);
     }
     else {
         easyEnemyMovement(normalEnemy, NORMAL_ENEMIES_SPEED);
@@ -161,14 +176,19 @@ function Bomb(power, pos_x, pos_y) {
 }
 
 function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
+    if (!bomb.alive) {
+        console.log('bomb is dead');
+        return;
+
+    }
     duration = 500;
 
     bomb.kill();
-    //bomb.destroy();
     if (!isTimeUp) {
-        bomb.clock.pause();
+        bomb.clock.destroy();
     }
-    
+    //bomb.destroy();
+
     game.physics.arcade.enable(bombs_exploision);
     // Bomb kernel
     var pos = getPosFromTile(posInTile_x, posInTile_y);
@@ -428,17 +448,17 @@ var playAgainstBotState = {
         items.setAll('')
 
         // Player
-        player = new BomberMan(0, game, 40, 40);
-        game.physics.arcade.enable(player.sprite);
-        // Fix size player
-        player.sprite.body.setSize(34, 34, 0, 4);
-        player.sprite.body.collideWorldBounds = true;
+        player = CreateBomberMan(0, game, 40, 40);
+        // game.physics.arcade.enable(player);
+        // // Fix size player
+        // player.body.setSize(34, 34, 0, 4);
+        // player.body.collideWorldBounds = true;
 
-        player.sprite.animations.add('right', [3, 17, 31], 5, false);
-        player.sprite.animations.add('left', [1, 15, 29], 5, false);
-        player.sprite.animations.add('up', [2, 16, 30], 5, false);
-        player.sprite.animations.add('down', [0, 14, 28], 5, false);
-        player.sprite.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
+        // player.animations.add('right', [3, 17, 31], 5, false);
+        // player.animations.add('left', [1, 15, 29], 5, false);
+        // player.animations.add('up', [2, 16, 30], 5, false);
+        // player.animations.add('down', [0, 14, 28], 5, false);
+        // player.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
 
         layer.debug = true;
 
@@ -453,7 +473,7 @@ var playAgainstBotState = {
         }, self);
 	},
 	update: function () {
-        if (!player.sprite.alive) {
+        if (!player.alive) {
             if (game.time.time - lastTime > 2000) {
                 this.finish();
                 return;                
@@ -463,24 +483,24 @@ var playAgainstBotState = {
             lastTime = game.time.time;
         }
         var pos = {x:0, y:0};
-        // pos.x = this.math.snapToFloor(Math.floor(player.sprite.x+17), TILE_WIDTH) / TILE_WIDTH;
-        // pos.y = this.math.snapToFloor(Math.floor(player.sprite.y+21), TILE_WIDTH) / TILE_WIDTH;
-        pos = getPosTile(player.sprite.x + 17, player.sprite.y + 21);
+        // pos.x = this.math.snapToFloor(Math.floor(player.x+17), TILE_WIDTH) / TILE_WIDTH;
+        // pos.y = this.math.snapToFloor(Math.floor(player.y+21), TILE_WIDTH) / TILE_WIDTH;
+        pos = getPosTile(player.x + 17, player.y + 21);
 
         game.physics.arcade.collide(easyenemies, layer);
         game.physics.arcade.collide(normalenemies, layer);
-        game.physics.arcade.collide(player.sprite, layer);
+        game.physics.arcade.collide(player, layer);
         
-        game.physics.arcade.collide(bombs, player.sprite);
-        game.physics.arcade.overlap(bombs_exploision, player.sprite, playerDeath, null, this);
+        game.physics.arcade.collide(bombs, player);
+        game.physics.arcade.overlap(bombs_exploision, player, playerDeath, null, this);
         game.physics.arcade.overlap(bombs, bombs_exploision, bomb_explosion_chain, null, this);
 
         // OVERLAP
         game.physics.arcade.overlap(bombs_exploision, easyenemies, enemyDeath, null, this);
         game.physics.arcade.overlap(bombs_exploision, normalenemies, enemyDeath, null, this);        
-        game.physics.arcade.overlap(player.sprite, easyenemies, playerDeath, null, this);
-        game.physics.arcade.overlap(player.sprite, normalenemies, playerDeath, null, this);
-        game.physics.arcade.overlap(player.sprite, items, playerHitItem, null, this);
+        game.physics.arcade.overlap(player, easyenemies, playerDeath, null, this);
+        game.physics.arcade.overlap(player, normalenemies, playerDeath, null, this);
+        game.physics.arcade.overlap(player, items, playerHitItem, null, this);
 
         // Easy enemies
         easyenemies.forEachAlive(easyEnemyMovement, this, EASY_ENEMIES_SPEED);
@@ -488,38 +508,38 @@ var playAgainstBotState = {
         //Normal enemies
         normalenemies.forEachAlive(normalEnemyMovement, this, player);
 
-        player.sprite.body.velocity.x = 0;
-        player.sprite.body.velocity.y = 0;
+        player.body.velocity.x = 0;
+        player.body.velocity.y = 0;
 
-        if (!player.sprite.alive) {
+        if (!player.alive) {
         }
         else if (cursors.right.isDown) {
             //  Move to the right
-            player.sprite.body.velocity.x = player.speed;
-            player.sprite.animations.play('right');
-            // var posInTile = getPosTile(player.sprite.x + 17, player.sprite.y + 21);
-            // if (Math.abs(getPosFromTile(posInTile.x, posInTile.y).y - player.sprite.y) < 50) {
-            //     player.sprite.y = getPosFromTile(posInTile.x, posInTile.y).y - TILE_WIDTH*0.5;
+            player.body.velocity.x = player.speed;
+            player.animations.play('right');
+            // var posInTile = getPosTile(player.x + 17, player.y + 21);
+            // if (Math.abs(getPosFromTile(posInTile.x, posInTile.y).y - player.y) < 50) {
+            //     player.y = getPosFromTile(posInTile.x, posInTile.y).y - TILE_WIDTH*0.5;
             // }
 
         }
         else if (cursors.left.isDown) {
-            player.sprite.body.velocity.x = -player.speed;
-            player.sprite.animations.play('left');
+            player.body.velocity.x = -player.speed;
+            player.animations.play('left');
         }
         else if (cursors.up.isDown) {
             //  Move up
-            player.sprite.body.velocity.y = -player.speed;
-            player.sprite.animations.play('up');
+            player.body.velocity.y = -player.speed;
+            player.animations.play('up');
         }
         else if (cursors.down.isDown) {
             //  Move down
-            player.sprite.body.velocity.y = player.speed;
-            player.sprite.animations.play('down');
+            player.body.velocity.y = player.speed;
+            player.animations.play('down');
         }
         else {
-            player.sprite.animations.stop();
-            player.sprite.frame = 0;
+            player.animations.stop();
+            player.frame = 0;
         }
 
 
