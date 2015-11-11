@@ -12,7 +12,7 @@ app.get('/', function(req, res){
 
 countPlayer = 0;
 data1 = {id: 1, pos:{x:1,y: 1}};
-data2 = {id: 2, pos:{x:3,y: 1}};
+data2 = {id: 2, pos:{x:1,y: 13}};
 
 
 io.on('connection',function(socket){
@@ -41,8 +41,8 @@ io.on('connection',function(socket){
 
   	//handle disconnect
 	socket.on('disconnect',function () {
-		console.log("user disconnect");
-		countPlayer--;
+		console.log("user disconnect :" + countPlayer);
+
 	});
 
 	socket.on('player_move', function(data) {

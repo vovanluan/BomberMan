@@ -9,10 +9,27 @@ var test =0 ;
 var players;
 // Extends Sprite class
 function CreateBomberMan(id, game, posInTile_x, posInTile_y) {
-    //var bomberMan = game.add.sprite(x, y, 'bomberman');
     var pos = getPosFromTile(posInTile_x, posInTile_y);
-    var bomberMan = players.create(pos.x - TILE_WIDTH/2, pos.y - TILE_WIDTH/2, 'bomberman');
-
+    var bomberMan;
+    alert('WHY');
+    if (id == 1) {
+        console.log('White');
+        bomberMan = players.create(pos.x - TILE_WIDTH/2, pos.y - TILE_WIDTH/2, 'bomberman');        
+        bomberMan.animations.add('right', [3, 17, 31], 5, false);
+        bomberMan.animations.add('left', [1, 15, 29], 5, false);
+        bomberMan.animations.add('up', [2, 16, 30], 5, false);
+        bomberMan.animations.add('down', [0, 14, 28], 5, false);
+        bomberMan.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);       
+    }
+    else if (id == 2) {
+        console.log('Black');
+        bomberMan = players.create(pos.x - TILE_WIDTH/2, pos.y - TILE_WIDTH/2, 'bomberman', 7);
+        bomberMan.animations.add('right', [10, 24, 38], 5, false);
+        bomberMan.animations.add('left', [8, 22, 36], 5, false);
+        bomberMan.animations.add('up', [9, 23, 37], 5, false);
+        bomberMan.animations.add('down', [7, 21, 35], 5, false);
+        bomberMan.animations.add('die', [12, 13, 25, 26, 27, 39, 40], 10, false);           
+    }
     bomberMan.id = id;
 
     bomberMan.game = game;
@@ -26,11 +43,7 @@ function CreateBomberMan(id, game, posInTile_x, posInTile_y) {
     bomberMan.body.setSize(34, 34, 0, 4);
     bomberMan.body.collideWorldBounds = true;
 
-    bomberMan.animations.add('right', [3, 17, 31], 5, false);
-    bomberMan.animations.add('left', [1, 15, 29], 5, false);
-    bomberMan.animations.add('up', [2, 16, 30], 5, false);
-    bomberMan.animations.add('down', [0, 14, 28], 5, false);
-    bomberMan.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
+
 
     return bomberMan;
 }
@@ -501,22 +514,35 @@ var playOnlineState = {
             player = CreateBomberMan(data.id, game, data.pos.x, data.pos.y);
         })
         socket.on("startGame", function (data) {
-            console.log(player.Id, data.data1, data.data2);  
             if (data.data1.id == player.Id) {
                 enemy = CreateBomberMan(data.data2.id, game, data.data2.pos.x, data.data2.pos.y);
             }
             else {
                 enemy = CreateBomberMan(data.data1.id, game, data.data1.pos.x, data.data1.pos.y);             
             }
+                    if (player != null && enemy != null) {
+                    console.log(player.Id, enemy.Id); 
+        }
         })
+
+ 
+
     },
     update: function () {
-        if (player == null) {
+        var loose = false;
+        if (player == null || enemy == null) {
             return;
         }
         if (!player.alive) {
             if (game.time.time - lastTime > 2000) {
-                this.finish();
+                loose = true;
+                this.finish(loose);
+                return;
+            }
+        }
+        else if (!enemy.alive) {
+            if (game.time.time - lastTime > 2000) {
+                this.finish(loose);
                 return;
             }
         }
@@ -537,7 +563,7 @@ var playOnlineState = {
         
         game.physics.arcade.collide(bombs, players);
         game.physics.arcade.collide(enemy, player);
-        game.physics.arcade.overlap(bombs_exploision, players, playerDeath, null, this);
+        game.physics.arcade.overlap(players, bombs_exploision, playerDeath, null, this);
         game.physics.arcade.overlap(bombs, bombs_exploision, bomb_explosion_chain, null, this);
 
         // OVERLAP
@@ -598,7 +624,7 @@ var playOnlineState = {
             }
         }
     },
-    finish: function () {
-        game.state.start('finish');
+    finish: function (loose) {
+        game.state.start('finish',true, false, loose);
     }
 };
