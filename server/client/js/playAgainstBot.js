@@ -6,9 +6,13 @@ var PLAYER_SPEED = 100;
 var lastTime = 0;
 
 var test =0 ;
+var players;
+
 // Extends Sprite class
-function CreateBomberMan(Id, game, x, y) {
-    var bomberMan = game.add.sprite(x, y, 'bomberman');
+function CreateBomberMan(Id, game, posInTile_x, posInTile_y) {
+    //var bomberMan = game.add.sprite(x, y, 'bomberman');
+    var pos = getPosFromTile(posInTile_x, posInTile_y);
+    var bomberMan = players.create(pos.x - TILE_WIDTH/2, pos.y - TILE_WIDTH/2, 'bomberman');
 
     bomberMan.Id = Id;
     bomberMan.game = game;
@@ -30,6 +34,7 @@ function CreateBomberMan(Id, game, x, y) {
 
     return bomberMan;
 }
+
 function easyEnemyMovement(easyEnemy, speed) {
     easyEnemy.animations.play('walk');
     if (easyEnemy.body.blocked.left) {
@@ -139,6 +144,7 @@ function playerHitItem(sprite, item) {
     item.kill();
     map.putTile(240, item.body.position.x, item.body.position.y, layer);
 }
+
 function getRandomCoordinates(){
             var randX = Math.floor((Math.random() * (game.world.width/TILE_WIDTH)));
             var randY = Math.floor((Math.random() * (game.world.height/TILE_HEIGHT)));
@@ -330,6 +336,7 @@ function getPosFromTile(tile_x, tile_y) {
         x:posx, y:posy
     };
 }
+
 function getPosTile(posInWorld_x, posInWorld_y) {
     var pos={x:0, y:0};
     pos.x = game.math.snapToFloor(Math.floor(posInWorld_x), TILE_WIDTH) / TILE_WIDTH;
@@ -392,7 +399,6 @@ function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
     if (posInWorld.x == child.x && posInWorld.y == child.y) {
         exist.e = true;
     }
-
 }
 
 var playAgainstBotState = {
@@ -451,17 +457,11 @@ var playAgainstBotState = {
         items.setAll('')
 
         // Player
-        player = CreateBomberMan(0, game, 40, 40);
-        // game.physics.arcade.enable(player);
-        // // Fix size player
-        // player.body.setSize(34, 34, 0, 4);
-        // player.body.collideWorldBounds = true;
+        players = game.add.group();
+        players.enableBody = true;
 
-        // player.animations.add('right', [3, 17, 31], 5, false);
-        // player.animations.add('left', [1, 15, 29], 5, false);
-        // player.animations.add('up', [2, 16, 30], 5, false);
-        // player.animations.add('down', [0, 14, 28], 5, false);
-        // player.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
+        player = CreateBomberMan(0, game, 1, 1);
+        player2 = CreateBomberMan(0, game, 10, 10);
 
         layer.debug = true;
 
@@ -486,8 +486,6 @@ var playAgainstBotState = {
             lastTime = game.time.time;
         }
         var pos = {x:0, y:0};
-        // pos.x = this.math.snapToFloor(Math.floor(player.x+17), TILE_WIDTH) / TILE_WIDTH;
-        // pos.y = this.math.snapToFloor(Math.floor(player.y+21), TILE_WIDTH) / TILE_WIDTH;
         pos = getPosTile(player.x + 17, player.y + 21);
 
         game.physics.arcade.collide(easyenemies, layer);
