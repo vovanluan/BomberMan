@@ -104,13 +104,28 @@ function normalEnemyMovement(normalEnemy, player) {
         easyEnemyMovement(normalEnemy, NORMAL_ENEMIES_SPEED);
     }
 }
+function hardEnemyMovement(hardEnemy, player) {
+    var enemyPos = getPosTile(hardEnemy.body.position.x, hardEnemy.body.position.y);
+    var playerPos = getPosTile(player.body.position.x, player.body.position.y);
+    var point = new Phaser.Point(playerPos.x, playerPos.y);
+    //Top of enemy
+    var distance = {};
+    hardEnemy.animations.play('walk');
+    if (hardEnemy.body.blocked.left) {
+        hardEnemy.body.velocity.x = NORMAL_ENEMIES_SPEED;
+    }
+    else if (hardEnemy.body.blocked.right){
+        hardEnemy.body.velocity.x = -NORMAL_ENEMIES_SPEED;
+    }
 
+}
 function playerDeath(sprite, enemy) {
     if (sprite.alive) {
         sprite.animations.play('die');
         sprite.body.velocity.x = 0;
         sprite.body.velocity.y = 0;
         sprite.alive = false;
+        game.sound.play("die_sound");
         game.time.events.add(Phaser.Timer.SECOND, function() {
             sprite.kill();   
         })
@@ -130,6 +145,7 @@ function enemyDeath(bombSprite, enemy) {
 }
 
 function playerHitItem(sprite, item) {
+    game.sound.play('an_vat_pham_sound');
     if (item.frame == 0) {
         player.numberOfBomb += 1;
     }
@@ -188,7 +204,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
 
     }
     duration = 500;
-
+    game.sound.play('bom_no_sound');
     bomb.kill();
     if (!isTimeUp) {
         bomb.clock.destroy();
@@ -392,6 +408,7 @@ function bomb_explosion_chain(bomb, bomb_exploision) {
 }
 
 function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
+
     var posInWorld = getPosFromTile(posInTile_x, posInTile_y);
     if (posInWorld.x == child.x && posInWorld.y == child.y) {
         exist.e = true;
@@ -448,6 +465,18 @@ var playAgainstBotState = {
         normalenemies.callAll('animations.add', 'animations', 'walk', [8, 9, 10], 5, false);
         normalenemies.callAll('animations.add', 'animations', 'die', [11, 12, 13], 3, false);
 
+        // Hard Enemies
+        hardenemies = game.add.group();
+        hardenemies.enableBody = true;
+        var numHardEnemies = Math.floor(Math.random() * 3 + 3);
+        for (var t = 0; t < numHardEnemies; t++) {
+            getRandomCoordinates();
+            hardenemies.create(randomX, randomY, 'hardenemies');
+        }
+        hardenemies.setAll('body.velocity.x', NORMAL_ENEMIES_SPEED);
+        hardenemies.callAll('animations.add', 'animations', 'walk', [0, 1, 2, 1, 0], 10, false);
+        hardenemies.callAll('animations.add', 'animations', 'die', [3], 3, false);
+
         // Items 
         items = game.add.group();
         items.enableBody = true;
@@ -458,7 +487,6 @@ var playAgainstBotState = {
         players.enableBody = true;
 
         player = CreateBomberMan(0, game, 1, 1);
-        player2 = CreateBomberMan(0, game, 10, 10);
 
         layer.debug = true;
 
@@ -487,6 +515,7 @@ var playAgainstBotState = {
 
         game.physics.arcade.collide(easyenemies, layer);
         game.physics.arcade.collide(normalenemies, layer);
+        game.physics.arcade.collide(hardenemies, layer);
         game.physics.arcade.collide(player, layer);
         
         game.physics.arcade.collide(bombs, player);
@@ -495,9 +524,11 @@ var playAgainstBotState = {
 
         // OVERLAP
         game.physics.arcade.overlap(bombs_exploision, easyenemies, enemyDeath, null, this);
-        game.physics.arcade.overlap(bombs_exploision, normalenemies, enemyDeath, null, this);        
+        game.physics.arcade.overlap(bombs_exploision, normalenemies, enemyDeath, null, this);  
+        game.physics.arcade.overlap(bombs_exploision, hardenemies, enemyDeath, null, this);        
         game.physics.arcade.overlap(player, easyenemies, playerDeath, null, this);
         game.physics.arcade.overlap(player, normalenemies, playerDeath, null, this);
+        game.physics.arcade.overlap(player, hardenemies, playerDeath, null, this);
         game.physics.arcade.overlap(player, items, playerHitItem, null, this);
 
         // Easy enemies
@@ -505,6 +536,9 @@ var playAgainstBotState = {
 
         //Normal enemies
         normalenemies.forEachAlive(normalEnemyMovement, this, player);
+
+        //Hard enemies
+        hardenemies.forEachAlive(hardEnemyMovement, this, player);
 
         player.body.velocity.x = 0;
         player.body.velocity.y = 0;
@@ -547,6 +581,7 @@ var playAgainstBotState = {
             console.log('len bombs = ' + bombs.length);
             if (!exist.e) {
                 if (player.bomb_available < player.numberOfBomb) {
+                    game.sound.play('dat_bom_sound');
                     var b = Bomb(player.power, pos.x, pos.y);
                     player.bomb_available ++;
                     console.log(test++);

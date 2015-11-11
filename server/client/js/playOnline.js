@@ -6,7 +6,7 @@ var PLAYER_SPEED = 100;
 var lastTime = 0;
 
 var test =0 ;
-
+var rand; // Dat lai cho khac cho dep
 var players;
 // Extends Sprite class
 function CreateBomberMan(id, game, posInTile_x, posInTile_y) {
@@ -350,8 +350,12 @@ function bomb_exploision_end(bombs_exploision, destroyed_blocks) {
 }
 
 function explosion_tail(posInTile_x, posIntile_y, direction) {
+
+    rand = Math.random();
+    socket.emit('send_random_number', rand);
+    
+    
     map.removeTile(posInTile_x, posIntile_y, layer);
-    var rand = Math.random();
     map.putTile(240, posInTile_x, posIntile_y, layer);
     // Create Bomb Item
 
@@ -477,11 +481,24 @@ var playOnlineState = {
         
 
         socket.on('server_player_move', function(data) {
+            if (data == null)
+                return;
             if (data.Id != player.Id) {
                 enemy.frame = data.frame;
                 enemy.x = data.x;
                 enemy.y = data.y;
+                enemy.frame = data.frame;
             }
+        });
+
+        socket.on('server_bomb', function(data) {
+            if (data.Id != player.Id) {
+                Bomb(data.power, data.x, data.y);
+            }
+        });
+
+        socket.on('response_random_number', function(rand_number) {
+            rand = rand_number;
         });
 
 
@@ -513,6 +530,10 @@ var playOnlineState = {
         else {
             lastTime = game.time.time;
         }
+
+
+        var data = {Id:player.Id, x:player.x, y:player.y, frame: player.frame};
+        socket.emit('player_move', data);
 
         var pos = {x:0, y:0};
         pos = getPosTile(player.x + 17, player.y + 21);
@@ -573,14 +594,14 @@ var playOnlineState = {
             bombs.forEachAlive(placeBombIfNotExist, this, pos.x, pos.y, exist);
             if (!exist.e) {
                 if (player.bomb_available < player.numberOfBomb) {
-                    var b = Bomb(player.power, pos.x, pos.y);
+                    Bomb(player.power, pos.x, pos.y);
                     player.bomb_available ++;
-                    console.log(test++);
+
+                    var data = {power:player.power, x:pos.x, y:pos.y};
+                    socket.emit('bomb', data);
                 }
             }
         }
-        var data = {Id:player.Id, x:player.x, y:player.y, frame: player.frame};
-        socket.emit('player_move', data);
     },
     finish: function () {
         game.state.start('finish');
