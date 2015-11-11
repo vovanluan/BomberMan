@@ -34,6 +34,7 @@ function CreateBomberMan(Id, game, posInTile_x, posInTile_y) {
 
     return bomberMan;
 }
+
 function easyEnemyMovement(easyEnemy, speed) {
     easyEnemy.animations.play('walk');
     if (easyEnemy.body.blocked.left) {
@@ -141,6 +142,7 @@ function playerHitItem(sprite, item) {
     item.kill();
     map.putTile(240, item.body.position.x, item.body.position.y, layer);
 }
+
 function getRandomCoordinates(){
             var randX = Math.floor((Math.random() * (game.world.width/TILE_WIDTH)));
             var randY = Math.floor((Math.random() * (game.world.height/TILE_HEIGHT)));
@@ -332,6 +334,7 @@ function getPosFromTile(tile_x, tile_y) {
         x:posx, y:posy
     };
 }
+
 function getPosTile(posInWorld_x, posInWorld_y) {
     var pos={x:0, y:0};
     pos.x = game.math.snapToFloor(Math.floor(posInWorld_x), TILE_WIDTH) / TILE_WIDTH;

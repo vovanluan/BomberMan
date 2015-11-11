@@ -456,6 +456,7 @@ var playOnlineState= {
         }, self);
 	},
 	update: function () {
+        socket.emit('updateRoom1', 'ductri');
         if (!player.sprite.alive) {
             if (game.time.time - lastTime > 2000) {
                 this.finish();
@@ -463,8 +464,10 @@ var playOnlineState= {
             }
         }
         else {
+
             lastTime = game.time.time;
         }
+
         var pos = {x:0, y:0};
         // pos.x = this.math.snapToFloor(Math.floor(player.sprite.x+17), TILE_WIDTH) / TILE_WIDTH;
         // pos.y = this.math.snapToFloor(Math.floor(player.sprite.y+21), TILE_WIDTH) / TILE_WIDTH;
