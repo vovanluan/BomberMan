@@ -6,7 +6,7 @@ var PLAYER_SPEED = 100;
 var lastTime = 0;
 
 var test =0 ;
-
+var rand; // Dat lai cho khac cho dep
 var players;
 
 // Extends Sprite class
@@ -351,8 +351,12 @@ function bomb_exploision_end(bombs_exploision, destroyed_blocks) {
 }
 
 function explosion_tail(posInTile_x, posIntile_y, direction) {
+
+    rand = Math.random();
+    socket.emit('send_random_number', rand);
+    
+    
     map.removeTile(posInTile_x, posIntile_y, layer);
-    var rand = Math.random();
     map.putTile(240, posInTile_x, posIntile_y, layer);
     // Create Bomb Item
 
@@ -477,11 +481,23 @@ var playOnlineState = {
         
 
         socket.on('server_player_move', function(data) {
-            console.log('ID='+data.Id);
+            if (data == null)
+                return;
             if (data.Id != player.Id) {
                 enemy.x = data.x;
                 enemy.y = data.y;
+                enemy.frame = data.frame;
             }
+        });
+
+        socket.on('server_bomb', function(data) {
+            if (data.Id != player.Id) {
+                Bomb(data.power, data.x, data.y);
+            }
+        });
+
+        socket.on('response_random_number', function(rand_number) {
+            rand = rand_number;
         });
 
 
@@ -518,26 +534,11 @@ var playOnlineState = {
         }
 
 
-        var data = {Id:player.Id, x:player.x, y:player.y};
+        var data = {Id:player.Id, x:player.x, y:player.y, frame: player.frame};
         socket.emit('player_move', data);
         
 
         var pos = {x:0, y:0};
-// =======
-//         if (enemy != null) {
-//             var lastPosition = enemy.body.position;
-//             socket.on("notifyRoom1", function(data) {
-//                 if (lastPosition.x != data.position.x || lastPosition.y != data.position.y) {
-//                     enemy.body.position.x = data.position.x;
-//                     enemy.body.position.y = data.position.y;
-//                 }
-//             })           
-//         }
-
-//         var pos = {x:0, y:0};
-//         // pos.x = this.math.snapToFloor(Math.floor(player.x+17), TILE_WIDTH) / TILE_WIDTH;
-//         // pos.y = this.math.snapToFloor(Math.floor(player.y+21), TILE_WIDTH) / TILE_WIDTH;
-// >>>>>>> 919164a392e6146d692abe6f424fa80da1cf7fac
         pos = getPosTile(player.x + 17, player.y + 21);
 
         game.physics.arcade.collide(easyenemies, layer);
@@ -597,16 +598,14 @@ var playOnlineState = {
             console.log('len bombs = ' + bombs.length);
             if (!exist.e) {
                 if (player.bomb_available < player.numberOfBomb) {
-                    var b = Bomb(player.power, pos.x, pos.y);
+                    Bomb(player.power, pos.x, pos.y);
                     player.bomb_available ++;
-                    console.log(test++);
+
+                    var data = {power:player.power, x:pos.x, y:pos.y};
+                    socket.emit('bomb', data);
                 }
             }
         }
-// <<<<<<< HEAD
-// =======
-//         socket.emit('updateRoom1', {id:player.Id, position:player.body.position});
-// >>>>>>> 919164a392e6146d692abe6f424fa80da1cf7fac
 
     },
     finish: function () {

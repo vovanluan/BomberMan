@@ -22,7 +22,7 @@ io.on('connection',function(socket){
 		if (countPlayer == 2) {
 			socket.emit("pendingGame", data2);
 			io.emit("startGame", {data1:data1, data2:data2});
-			socket.emit("startGame", {data1:data1, data2:data2});
+			//socket.emit("startGame", {data1:data1, data2:data2});
 		}
 		else {
 
@@ -48,10 +48,17 @@ io.on('connection',function(socket){
 	});
 
 	socket.on('player_move', function(data) {
-		
-
 		io.emit('server_player_move', data);
 	});
+
+	socket.on('bomb', function(data) {
+		io.emit('server_bomb', data);
+	});
+
+	socket.on('request_random_number', function(rand_number) {
+		io.emit('response_random_number', rand_number);
+	});
+	
 })
 
 http.listen(3001, function(){
