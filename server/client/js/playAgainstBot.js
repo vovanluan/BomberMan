@@ -111,6 +111,7 @@ function playerDeath(sprite, enemy) {
         sprite.body.velocity.x = 0;
         sprite.body.velocity.y = 0;
         sprite.alive = false;
+        game.sound.play("die_sound");
         game.time.events.add(Phaser.Timer.SECOND, function() {
             sprite.kill();   
         })
@@ -130,6 +131,7 @@ function enemyDeath(bombSprite, enemy) {
 }
 
 function playerHitItem(sprite, item) {
+    game.sound.play('an_vat_pham_sound');
     if (item.frame == 0) {
         player.numberOfBomb += 1;
     }
@@ -169,6 +171,7 @@ function getRandomCoordinates(){
 //     bomb.anchor.y = 0.5;
 //     bomb.animations.play('bomb_static');
     
+
 //     bomb.power = power;
 //     bomb.posInTile_x = pos_x;
 //     bomb.posInTile_y = pos_y;
@@ -325,6 +328,7 @@ function getRandomCoordinates(){
 
 //    game.time.events.add(duration, bomb_exploision_end, this, bombs_exploision, destroyed_blocks);
 // }
+   
 
 function getPosFromTile(tile_x, tile_y) {
     var posx = tile_x*TILE_WIDTH + 0.5*TILE_WIDTH;
@@ -392,6 +396,7 @@ function bomb_explosion_chain(bomb, bomb_exploision) {
 }
 
 function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
+
     var posInWorld = getPosFromTile(posInTile_x, posInTile_y);
     if (posInWorld.x == child.x && posInWorld.y == child.y) {
         exist.e = true;
@@ -547,6 +552,7 @@ var playAgainstBotState = {
             console.log('len bombs = ' + bombs.length);
             if (!exist.e) {
                 if (player.bomb_available < player.numberOfBomb) {
+                    game.sound.play('dat_bom_sound');
                     var b = Bomb(player.power, pos.x, pos.y);
                     player.bomb_available ++;
                     console.log(test++);
