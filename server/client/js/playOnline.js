@@ -6,7 +6,6 @@ var PLAYER_SPEED = 100;
 var lastTime = 0;
 
 var test =0 ;
-var rand; // Dat lai cho khac cho dep
 var players;
 
 // Extends Sprite class
@@ -18,7 +17,7 @@ function CreateBomberMan(id, game, posInTile_x, posInTile_y) {
     bomberMan.id = id;
 
     bomberMan.game = game;
-    bomberMan.numberOfBomb = 10;
+    bomberMan.numberOfBomb = 1;
     bomberMan.bomb_available = 0;
     bomberMan.speed = PLAYER_SPEED;
     bomberMan.power = 1;
@@ -158,7 +157,7 @@ function getRandomCoordinates(){
             }
 }
 
-function Bomb(power, pos_x, pos_y) {
+function Bomb(power, pos_x, pos_y, rand) {
     var pos = getPosFromTile(pos_x, pos_y);
     var bomb = bombs.create(pos.x, pos.y, 'bomb');
     game.physics.arcade.enable(bomb);
@@ -176,18 +175,16 @@ function Bomb(power, pos_x, pos_y) {
     bomb.posInTile_y = pos_y;
 
     var clock = game.time.create(false);
-    clock.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb, true);
+    clock.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb, true, rand);
     clock.start();
     bomb.clock = clock;
 
     return bomb;
 }
 
-function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
+function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp, rand) {
     if (!bomb.alive) {
-        console.log('bomb is dead');
         return;
-
     }
     duration = 500;
 
@@ -218,7 +215,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
             bomb_apart.angle = 90;
         } else {
             if (tile_index == 134) {
-                explosion_tail(posInTile_x, posInTile_y-i, 'up');
+                explosion_tail(posInTile_x, posInTile_y-i, 'up', rand);
             }
             break;
         }
@@ -232,7 +229,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
         bomb_apart.angle = -90;
     } else {
         if (tile_index == 134) {
-            explosion_tail(posInTile_x, posInTile_y-i, 'up');
+            explosion_tail(posInTile_x, posInTile_y-i, 'up', rand);
         }
     }
 
@@ -247,7 +244,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
             bomb_apart.angle = 90;
         } else {
             if (tile_index == 134) {
-                explosion_tail(posInTile_x, posInTile_y+i, 'down');
+                explosion_tail(posInTile_x, posInTile_y+i, 'down', rand);
             }
             break;
         }
@@ -262,7 +259,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
         bomb_apart.angle = 90;
     } else {
         if (tile_index == 134) {
-            explosion_tail(posInTile_x, posInTile_y+i, 'down');
+            explosion_tail(posInTile_x, posInTile_y+i, 'down', rand);
         }
     }
 
@@ -277,7 +274,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
             bomb_apart.angle = 0;
         } else {
             if (tile_index == 134) {
-                explosion_tail(posInTile_x-i, posInTile_y, 'left');
+                explosion_tail(posInTile_x-i, posInTile_y, 'left', rand);
             }
             break;
         }
@@ -291,7 +288,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
         bomb_apart.angle = 180;
     } else {
         if (tile_index == 134) {
-            explosion_tail(posInTile_x-i, posInTile_y, 'left');
+            explosion_tail(posInTile_x-i, posInTile_y, 'left', rand);
         }
     }
 
@@ -306,7 +303,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
             bomb_apart.angle = 0;
         } else {
             if (tile_index == 134) {
-                explosion_tail(posInTile_x+i, posInTile_y, 'right');
+                explosion_tail(posInTile_x+i, posInTile_y, 'right', rand);
             }
             break;
         }
@@ -321,7 +318,7 @@ function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
         bomb_apart.angle = 0;
     } else {
         if (tile_index == 134) {
-            explosion_tail(posInTile_x+i, posInTile_y, 'right');
+            explosion_tail(posInTile_x+i, posInTile_y, 'right', rand);
         }
     }
 
@@ -350,12 +347,9 @@ function bomb_exploision_end(bombs_exploision, destroyed_blocks) {
     player.bomb_available --;
 }
 
-function explosion_tail(posInTile_x, posIntile_y, direction) {
+function explosion_tail(posInTile_x, posIntile_y, direction, rand) {
 
-    rand = Math.random();
-    socket.emit('send_random_number', rand);
-    
-    
+    console.log('random = ' + rand);
     map.removeTile(posInTile_x, posIntile_y, layer);
     map.putTile(240, posInTile_x, posIntile_y, layer);
     // Create Bomb Item
@@ -434,7 +428,7 @@ var playOnlineState = {
         easyenemies = game.add.group();
         easyenemies.enableBody = true;
 
-        var numEasyEnemies = Math.floor(0);
+        var numEasyEnemies = Math.floor(2);
 
         for (var i = 0; i < numEasyEnemies; i++) {
             getRandomCoordinates();
@@ -449,7 +443,7 @@ var playOnlineState = {
         normalenemies = game.add.group();
         normalenemies.enableBody = true;
 
-        var numNormalEnemies = Math.floor(0);
+        var numNormalEnemies = Math.floor(2);
 
         for (var t = 0; t < numNormalEnemies; t++) {
             getRandomCoordinates();
@@ -481,9 +475,8 @@ var playOnlineState = {
         
 
         socket.on('server_player_move', function(data) {
-            if (data == null)
-                return;
-            if (data.Id != player.Id) {
+            
+            if (player.Id == null || data.Id != player.Id) {
                 enemy.x = data.x;
                 enemy.y = data.y;
                 enemy.frame = data.frame;
@@ -492,7 +485,7 @@ var playOnlineState = {
 
         socket.on('server_bomb', function(data) {
             if (data.Id != player.Id) {
-                Bomb(data.power, data.x, data.y);
+                Bomb(data.power, data.x, data.y, data.rand);
             }
         });
 
@@ -543,18 +536,19 @@ var playOnlineState = {
 
         game.physics.arcade.collide(easyenemies, layer);
         game.physics.arcade.collide(normalenemies, layer);
-        game.physics.arcade.collide(player, layer);
+        game.physics.arcade.collide(players, layer);
         
-        game.physics.arcade.collide(bombs, player);
-        game.physics.arcade.overlap(bombs_exploision, player, playerDeath, null, this);
+        game.physics.arcade.collide(bombs, players);
+        game.physics.arcade.collide(enemy, player);
+        game.physics.arcade.overlap(bombs_exploision, players, playerDeath, null, this);
         game.physics.arcade.overlap(bombs, bombs_exploision, bomb_explosion_chain, null, this);
 
         // OVERLAP
         game.physics.arcade.overlap(bombs_exploision, easyenemies, enemyDeath, null, this);
         game.physics.arcade.overlap(bombs_exploision, normalenemies, enemyDeath, null, this);        
-        game.physics.arcade.overlap(player, easyenemies, playerDeath, null, this);
-        game.physics.arcade.overlap(player, normalenemies, playerDeath, null, this);
-        game.physics.arcade.overlap(player, items, playerHitItem, null, this);
+        game.physics.arcade.overlap(players, easyenemies, playerDeath, null, this);
+        game.physics.arcade.overlap(players, normalenemies, playerDeath, null, this);
+        game.physics.arcade.overlap(players, items, playerHitItem, null, this);
 
         // Easy enemies
         easyenemies.forEachAlive(easyEnemyMovement, this, EASY_ENEMIES_SPEED);
@@ -595,13 +589,13 @@ var playOnlineState = {
         if (game.input.keyboard.isDown(Phaser.KeyCode.SPACEBAR)) {
             var exist = {e:false};
             bombs.forEachAlive(placeBombIfNotExist, this, pos.x, pos.y, exist);
-            console.log('len bombs = ' + bombs.length);
             if (!exist.e) {
                 if (player.bomb_available < player.numberOfBomb) {
-                    Bomb(player.power, pos.x, pos.y);
+                    rand = Math.random();
+                    Bomb(player.power, pos.x, pos.y, rand);
                     player.bomb_available ++;
 
-                    var data = {power:player.power, x:pos.x, y:pos.y};
+                    var data = {Id:player.Id, power:player.power, x:pos.x, y:pos.y, rand:rand};
                     socket.emit('bomb', data);
                 }
             }
