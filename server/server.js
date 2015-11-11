@@ -10,12 +10,6 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/client/index.html');
 });
 
-// <<<<<<< HEAD
-// app.get('/test', function(req, res){
-//   res.sendFile(__dirname + '/index.html');
-//   //res.sendFile(__dirname + '/client/index.html');
-// });
-// =======
 countPlayer = 0;
 data1 = {id: 1, pos:{x:1,y: 1}};
 data2 = {id: 2, pos:{x:3,y: 1}};

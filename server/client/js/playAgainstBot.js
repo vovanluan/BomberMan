@@ -16,7 +16,7 @@ function CreateBomberMan(Id, game, posInTile_x, posInTile_y) {
 
     bomberMan.Id = Id;
     bomberMan.game = game;
-    bomberMan.numberOfBomb = 10;
+    bomberMan.numberOfBomb = 1;
     bomberMan.bomb_available = 0;
     bomberMan.speed = PLAYER_SPEED;
     bomberMan.power = 1;
@@ -172,175 +172,177 @@ function getRandomCoordinates(){
             }
 }
 
-function Bomb(power, pos_x, pos_y) {
-    var pos = getPosFromTile(pos_x, pos_y);
-    var bomb = bombs.create(pos.x, pos.y, 'bomb');
-    game.physics.arcade.enable(bomb);
-    bomb.body.immovable = true;
-    bomb.body.setSize(40, 40, 0, 0);
-    bomb.body.collideWorldBounds = true;
-    bomb.frame = 2;
-    bomb.animations.add('bomb_static', [0, 1, 2], 1, false);
-    bomb.anchor.x = 0.5;
-    bomb.anchor.y = 0.5;
-    bomb.animations.play('bomb_static');
+// function Bomb(power, pos_x, pos_y) {
+//     var pos = getPosFromTile(pos_x, pos_y);
+//     var bomb = bombs.create(pos.x, pos.y, 'bomb');
+//     game.physics.arcade.enable(bomb);
+//     bomb.body.immovable = true;
+//     bomb.body.setSize(40, 40, 0, 0);
+//     bomb.body.collideWorldBounds = true;
+//     bomb.frame = 2;
+//     bomb.animations.add('bomb_static', [0, 1, 2], 1, false);
+//     bomb.anchor.x = 0.5;
+//     bomb.anchor.y = 0.5;
+//     bomb.animations.play('bomb_static');
     
-    bomb.power = power;
-    bomb.posInTile_x = pos_x;
-    bomb.posInTile_y = pos_y;
 
-    var clock = game.time.create(false);
-    clock.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb, true);
-    clock.start();
-    bomb.clock = clock;
+//     bomb.power = power;
+//     bomb.posInTile_x = pos_x;
+//     bomb.posInTile_y = pos_y;
 
-    return bomb;
-}
+//     var clock = game.time.create(false);
+//     clock.add(3000, this.BombExplosion, this, power, pos_x, pos_y, bomb, true);
+//     clock.start();
+//     bomb.clock = clock;
 
-function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
-    if (!bomb.alive) {
-        console.log('bomb is dead');
-        return;
+//     return bomb;
+// }
 
-    }
-    duration = 500;
-    game.sound.play('bom_no_sound');
-    bomb.kill();
-    if (!isTimeUp) {
-        bomb.clock.destroy();
-    }
-    //bomb.destroy();
+// function BombExplosion(power, posInTile_x, posInTile_y, bomb, isTimeUp) {
+//     if (!bomb.alive) {
+//         console.log('bomb is dead');
+//         return;
 
-    game.physics.arcade.enable(bombs_exploision);
-    // Bomb kernel
-    var pos = getPosFromTile(posInTile_x, posInTile_y);
-    var bomb_apart = bombs_exploision.create(pos.x,pos.y, 'bomb_exploision0');
-    bomb_apart.anchor.x = 0.5;
-    bomb_apart.anchor.y = 0.5;
+//     }
+//     duration = 500;
 
-    var destroyed_blocks = [];
+//     bomb.kill();
+//     if (!isTimeUp) {
+//         bomb.clock.destroy();
+//     }
+//     //bomb.destroy();
 
-    // Up
-    i=0;
-    for (i=1; i<power; i++) {
-        var tile_index = map.getTile(posInTile_x, posInTile_y-i).index;
-        if (tile_index == 240) {
-            pos = getPosFromTile(posInTile_x, posInTile_y-i);
-            var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision1');
-            bomb_apart.anchor.x = 0.5;
-            bomb_apart.anchor.y = 0.5;
-            bomb_apart.angle = 90;
-        } else {
-            if (tile_index == 134) {
-                explosion_tail(posInTile_x, posInTile_y-i, 'up');
-            }
-            break;
-        }
-    }
-    var tile_index = map.getTile(posInTile_x, posInTile_y-i).index;
-    if (tile_index == 240) {
-        pos = getPosFromTile(posInTile_x, posInTile_y-i);
-        var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision2');
-        bomb_apart.anchor.x = 0.5;
-        bomb_apart.anchor.y = 0.5;
-        bomb_apart.angle = -90;
-    } else {
-        if (tile_index == 134) {
-            explosion_tail(posInTile_x, posInTile_y-i, 'up');
-        }
-    }
+//     game.physics.arcade.enable(bombs_exploision);
+//     // Bomb kernel
+//     var pos = getPosFromTile(posInTile_x, posInTile_y);
+//     var bomb_apart = bombs_exploision.create(pos.x,pos.y, 'bomb_exploision0');
+//     bomb_apart.anchor.x = 0.5;
+//     bomb_apart.anchor.y = 0.5;
 
-    // Down
-    for (i=1; i<power; i++) {
-        var tile_index = map.getTile(posInTile_x, posInTile_y+i).index;
-        if (tile_index == 240) {
-            pos = getPosFromTile(posInTile_x, posInTile_y+i);
-            var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision1');
-            bomb_apart.anchor.x = 0.5;
-            bomb_apart.anchor.y = 0.5;
-            bomb_apart.angle = 90;
-        } else {
-            if (tile_index == 134) {
-                explosion_tail(posInTile_x, posInTile_y+i, 'down');
-            }
-            break;
-        }
-    }
+//     var destroyed_blocks = [];
 
-    var tile_index = map.getTile(posInTile_x, posInTile_y+i).index;
-    if (tile_index == 240) {
-        pos = getPosFromTile(posInTile_x, posInTile_y+i);
-        var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision2');
-        bomb_apart.anchor.x = 0.5;
-        bomb_apart.anchor.y = 0.5;
-        bomb_apart.angle = 90;
-    } else {
-        if (tile_index == 134) {
-            explosion_tail(posInTile_x, posInTile_y+i, 'down');
-        }
-    }
+//     // Up
+//     i=0;
+//     for (i=1; i<power; i++) {
+//         var tile_index = map.getTile(posInTile_x, posInTile_y-i).index;
+//         if (tile_index == 240) {
+//             pos = getPosFromTile(posInTile_x, posInTile_y-i);
+//             var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision1');
+//             bomb_apart.anchor.x = 0.5;
+//             bomb_apart.anchor.y = 0.5;
+//             bomb_apart.angle = 90;
+//         } else {
+//             if (tile_index == 134) {
+//                 explosion_tail(posInTile_x, posInTile_y-i, 'up');
+//             }
+//             break;
+//         }
+//     }
+//     var tile_index = map.getTile(posInTile_x, posInTile_y-i).index;
+//     if (tile_index == 240) {
+//         pos = getPosFromTile(posInTile_x, posInTile_y-i);
+//         var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision2');
+//         bomb_apart.anchor.x = 0.5;
+//         bomb_apart.anchor.y = 0.5;
+//         bomb_apart.angle = -90;
+//     } else {
+//         if (tile_index == 134) {
+//             explosion_tail(posInTile_x, posInTile_y-i, 'up');
+//         }
+//     }
 
-    // Left
-    for (i=1; i<power; i++) {
-        var tile_index = map.getTile(posInTile_x-i, posInTile_y).index;
-        if (tile_index == 240) {
-            pos = getPosFromTile(posInTile_x-i, posInTile_y);
-            var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision1');
-            bomb_apart.anchor.x = 0.5;
-            bomb_apart.anchor.y = 0.5;
-            bomb_apart.angle = 0;
-        } else {
-            if (tile_index == 134) {
-                explosion_tail(posInTile_x-i, posInTile_y, 'left');
-            }
-            break;
-        }
-    }
-    var tile_index = map.getTile(posInTile_x-i, posInTile_y).index;
-    if (tile_index == 240) {
-        pos = getPosFromTile(posInTile_x-i, posInTile_y);
-        var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision2');
-        bomb_apart.anchor.x = 0.5;
-        bomb_apart.anchor.y = 0.5;
-        bomb_apart.angle = 180;
-    } else {
-        if (tile_index == 134) {
-            explosion_tail(posInTile_x-i, posInTile_y, 'left');
-        }
-    }
+//     // Down
+//     for (i=1; i<power; i++) {
+//         var tile_index = map.getTile(posInTile_x, posInTile_y+i).index;
+//         if (tile_index == 240) {
+//             pos = getPosFromTile(posInTile_x, posInTile_y+i);
+//             var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision1');
+//             bomb_apart.anchor.x = 0.5;
+//             bomb_apart.anchor.y = 0.5;
+//             bomb_apart.angle = 90;
+//         } else {
+//             if (tile_index == 134) {
+//                 explosion_tail(posInTile_x, posInTile_y+i, 'down');
+//             }
+//             break;
+//         }
+//     }
 
-    // Right
-    for (i=1; i<power; i++) {
-        var tile_index = map.getTile(posInTile_x+i, posInTile_y).index;
-        if (tile_index == 240) {
-            pos = getPosFromTile(posInTile_x+i, posInTile_y);
-            var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision1');
-            bomb_apart.anchor.x = 0.5;
-            bomb_apart.anchor.y = 0.5;
-            bomb_apart.angle = 0;
-        } else {
-            if (tile_index == 134) {
-                explosion_tail(posInTile_x+i, posInTile_y, 'right');
-            }
-            break;
-        }
-    }
+//     var tile_index = map.getTile(posInTile_x, posInTile_y+i).index;
+//     if (tile_index == 240) {
+//         pos = getPosFromTile(posInTile_x, posInTile_y+i);
+//         var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision2');
+//         bomb_apart.anchor.x = 0.5;
+//         bomb_apart.anchor.y = 0.5;
+//         bomb_apart.angle = 90;
+//     } else {
+//         if (tile_index == 134) {
+//             explosion_tail(posInTile_x, posInTile_y+i, 'down');
+//         }
+//     }
 
-    var tile_index = map.getTile(posInTile_x+i, posInTile_y).index;
-    if (tile_index == 240) {
-        pos = getPosFromTile(posInTile_x+i, posInTile_y);
-        var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision2');
-        bomb_apart.anchor.x = 0.5;
-        bomb_apart.anchor.y = 0.5;
-        bomb_apart.angle = 0;
-    } else {
-        if (tile_index == 134) {
-            explosion_tail(posInTile_x+i, posInTile_y, 'right');
-        }
-    }
+//     // Left
+//     for (i=1; i<power; i++) {
+//         var tile_index = map.getTile(posInTile_x-i, posInTile_y).index;
+//         if (tile_index == 240) {
+//             pos = getPosFromTile(posInTile_x-i, posInTile_y);
+//             var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision1');
+//             bomb_apart.anchor.x = 0.5;
+//             bomb_apart.anchor.y = 0.5;
+//             bomb_apart.angle = 0;
+//         } else {
+//             if (tile_index == 134) {
+//                 explosion_tail(posInTile_x-i, posInTile_y, 'left');
+//             }
+//             break;
+//         }
+//     }
+//     var tile_index = map.getTile(posInTile_x-i, posInTile_y).index;
+//     if (tile_index == 240) {
+//         pos = getPosFromTile(posInTile_x-i, posInTile_y);
+//         var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision2');
+//         bomb_apart.anchor.x = 0.5;
+//         bomb_apart.anchor.y = 0.5;
+//         bomb_apart.angle = 180;
+//     } else {
+//         if (tile_index == 134) {
+//             explosion_tail(posInTile_x-i, posInTile_y, 'left');
+//         }
+//     }
 
-   game.time.events.add(duration, bomb_exploision_end, this, bombs_exploision, destroyed_blocks);
-}
+//     // Right
+//     for (i=1; i<power; i++) {
+//         var tile_index = map.getTile(posInTile_x+i, posInTile_y).index;
+//         if (tile_index == 240) {
+//             pos = getPosFromTile(posInTile_x+i, posInTile_y);
+//             var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision1');
+//             bomb_apart.anchor.x = 0.5;
+//             bomb_apart.anchor.y = 0.5;
+//             bomb_apart.angle = 0;
+//         } else {
+//             if (tile_index == 134) {
+//                 explosion_tail(posInTile_x+i, posInTile_y, 'right');
+//             }
+//             break;
+//         }
+//     }
+
+//     var tile_index = map.getTile(posInTile_x+i, posInTile_y).index;
+//     if (tile_index == 240) {
+//         pos = getPosFromTile(posInTile_x+i, posInTile_y);
+//         var bomb_apart = bombs_exploision.create(pos.x, pos.y, 'bomb_exploision2');
+//         bomb_apart.anchor.x = 0.5;
+//         bomb_apart.anchor.y = 0.5;
+//         bomb_apart.angle = 0;
+//     } else {
+//         if (tile_index == 134) {
+//             explosion_tail(posInTile_x+i, posInTile_y, 'right');
+//         }
+//     }
+
+//    game.time.events.add(duration, bomb_exploision_end, this, bombs_exploision, destroyed_blocks);
+// }
+   
 
 function getPosFromTile(tile_x, tile_y) {
     var posx = tile_x*TILE_WIDTH + 0.5*TILE_WIDTH;
@@ -364,43 +366,43 @@ function bomb_exploision_end(bombs_exploision, destroyed_blocks) {
     player.bomb_available --;
 }
 
-function explosion_tail(posInTile_x, posIntile_y, direction) {
-    map.removeTile(posInTile_x, posIntile_y, layer);
-    var rand = Math.random();
-    map.putTile(240, posInTile_x, posIntile_y, layer);
-    // Create Bomb Item
+// function explosion_tail(posInTile_x, posIntile_y, direction) {
+//     map.removeTile(posInTile_x, posIntile_y, layer);
+//     var rand = Math.random();
+//     map.putTile(240, posInTile_x, posIntile_y, layer);
+//     // Create Bomb Item
 
-    if (rand < 0.15) {
-        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 0);
-    }
-    // Create Power Item: Increase range
-    else if (rand < 0.3) {
-        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 1);
-    }
-    // Create increasing speed Item
-    else if (rand < 0.4) {
-        items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 2);
-    }
+//     if (rand < 0.15) {
+//         items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 0);
+//     }
+//     // Create Power Item: Increase range
+//     else if (rand < 0.3) {
+//         items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 1);
+//     }
+//     // Create increasing speed Item
+//     else if (rand < 0.4) {
+//         items.create(TILE_WIDTH * posInTile_x, TILE_HEIGHT * posIntile_y, 'items', 2);
+//     }
 
 
-    var posInWorld = getPosFromTile(posInTile_x, posIntile_y);
-    var bomb_apart = bombs_exploision.create(posInWorld.x, posInWorld.y, 'bomb_exploision2');
+//     var posInWorld = getPosFromTile(posInTile_x, posIntile_y);
+//     var bomb_apart = bombs_exploision.create(posInWorld.x, posInWorld.y, 'bomb_exploision2');
     
-    bomb_apart.anchor.x = 0.5;
-    bomb_apart.anchor.y = 0.5;
-    if (direction == 'down') {
-        bomb_apart.angle = 90;
-    }
-    else if (direction == 'up') {
-        bomb_apart.angle = -90;
-    }
-    else if (direction == 'right') {
-        bomb_apart.angle = 0;   
-    }
-    else {
-        bomb_apart.angle = 180;
-    }
-}
+//     bomb_apart.anchor.x = 0.5;
+//     bomb_apart.anchor.y = 0.5;
+//     if (direction == 'down') {
+//         bomb_apart.angle = 90;
+//     }
+//     else if (direction == 'up') {
+//         bomb_apart.angle = -90;
+//     }
+//     else if (direction == 'right') {
+//         bomb_apart.angle = 0;   
+//     }
+//     else {
+//         bomb_apart.angle = 180;
+//     }
+// }
 
 function bomb_explosion_chain(bomb, bomb_exploision) {
 
