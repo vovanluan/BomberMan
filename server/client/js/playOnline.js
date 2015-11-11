@@ -9,81 +9,18 @@ var test =0 ;
 function BomberMan(Id, game, x, y) {
     this.Id = Id;
     this.game = game;
-    this.sprite = game.add.sprite(x, y, 'bomberman');
+    if (this.Id == 0) {
+        this.sprite = game.add.sprite(x, y, 'bomberman');       
+    }
+    else {
+        this.sprite = game.add.sprite(x, y, 'bomberman', 7);
+    }
     this.numberOfBomb = 10;
     this.bomb_available = 0;
     this.speed = PLAYER_SPEED;
     this.power = 1;
 }
-function easyEnemyMovement(easyEnemy, speed) {
-    easyEnemy.animations.play('walk');
-    if (easyEnemy.body.blocked.left) {
-        easyEnemy.body.velocity.x = speed;
-    }
-    else if (easyEnemy.body.blocked.right) {
-        easyEnemy.body.velocity.x = -speed;
-    }
-    else if (easyEnemy.body.blocked.up) {
-        easyEnemy.body.velocity.y = speed;
-    }
-    else if (easyEnemy.body.blocked.down) {
-        easyEnemy.body.velocity.y = -speed;
-    }
-}
 
-function normalEnemyMovement(normalEnemy, player) {
-    var normalEnemyTile = map.getTileWorldXY(normalEnemy.body.position.x, normalEnemy.body.position.y, 40, 40, layer);
-    var playerTile = map.getTileWorldXY(player.sprite.body.position.x, player.sprite.body.position.y, 40, 40, layer);
-    // Enemy and player are in the same column
-    var canEnemySeePlayer = true;
-    if (normalEnemyTile.x == playerTile.x) {
-        if (normalEnemyTile.y < playerTile.y) {
-            for (var i = normalEnemyTile.y; i < playerTile.y; i++) {
-                if (map.getTile(normalEnemyTile.x, i).index != 240) {
-                    canEnemySeePlayer = false;
-                    break;
-                }
-            }
-        }
-        else {
-            for (var i = playerTile.y; i < normalEnemyTile.y; i++) {
-                if (map.getTile(normalEnemyTile.x, i).index != 240) {
-                    canEnemySeePlayer = false;
-                    break;
-                }
-            }   
-        }
-    }
-    // Enemy and player are in the same row
-    else if (normalEnemyTile.y == playerTile.y) {
-        if (normalEnemyTile.x < playerTile.x) {
-            for (var i = normalEnemyTile.x; i < playerTile.x; i++) {
-                if (map.getTile(i, normalEnemyTile.y).index != 240) {
-                    canEnemySeePlayer = false;
-                    break;
-                }
-            }            
-        }
-        else {
-            for (var i = playerTile.x; i < normalEnemyTile.x; i++) {
-                if (map.getTile(i, normalEnemyTile.y).index != 240) {
-                    canEnemySeePlayer = false;
-                    break;
-                }
-            }            
-        }
-    }
-    else {
-        canEnemySeePlayer = false;
-    }
-
-    if (canEnemySeePlayer) {
-        game.physics.arcade.moveToObject(normalEnemy, player.sprite, NORMAL_ENEMIES_SPEED);
-    }
-    else {
-        easyEnemyMovement(normalEnemy, NORMAL_ENEMIES_SPEED);
-    }
-}
 
 function playerDeath(sprite, enemy) {
     if (sprite.alive) {
@@ -93,18 +30,6 @@ function playerDeath(sprite, enemy) {
         sprite.alive = false;
         game.time.events.add(Phaser.Timer.SECOND, function() {
             sprite.kill();   
-        })
-    }
-}
-
-function enemyDeath(bombSprite, enemy) {
-    if (enemy.alive) {
-        enemy.animations.play('die');
-        enemy.body.velocity.x = 0;
-        enemy.body.velocity.y = 0;
-        enemy.alive = false;
-        game.time.events.add(Phaser.Timer.SECOND, function() {
-            enemy.kill();   
         })
     }
 }
@@ -373,57 +298,28 @@ function placeBombIfNotExist(child, posInTile_x, posInTile_y, exist) {
 }
 
 var playOnlineState= {
-    init: function (players) {
-        this.players = players;
-    },
+    players : {},
 	create:function () {
-        console.log("log from play online "+room);
-
-        game.physics.startSystem(Phaser.Physics.ARCADE);
-        
-        // Map
-        
-        map = game.add.tilemap('level1', TILE_WIDTH, TILE_HEIGHT);
-
-        //  Now add in the tileset
+        socket.on("notifyRoom1", function (data) {
+            this.players = data.players;
+            this.playerId = data.players.length;
+            this.player =  new BomberMan(playerId, game, 40, 40);
+            this.players[playerId] = this.player;
+            this.map = data.map;
+            this.layer = data.layer;
+        })
+        this.map = game.add.tilemap('level1', TILE_WIDTH, TILE_HEIGHT);
         map.addTilesetImage('tiles');
         layer = map.createLayer(0);
-        map.setCollisionByExclusion([240], true, layer);
+        map.setCollisionByExclusion([240], true, layer);  
         layer.resizeWorld();
-
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        
         // Bomb
         bombs = game.add.group();
         bombs.enableBody = true;
         bombs_exploision = game.add.group();
         bombs_exploision.enableBody = true;
-        //Bomb(1, 2, 1);
-        //game.input.keyboard.isDown(Phaser.KeyCode.BACKSPACE);
-
-        // Ease Enemies
-        easyenemies = game.add.group();
-        easyenemies.enableBody = true;
-        var numEasyEnemies = Math.floor(Math.random() * 4 + 4);
-        for (var i = 0; i < numEasyEnemies; i++) {
-            getRandomCoordinates();
-            easyenemies.create(randomX, randomY, 'easyenemies');
-        }
-        easyenemies.setAll('body.velocity.x', EASY_ENEMIES_SPEED);
-        easyenemies.setAll('body.velocity.y', EASY_ENEMIES_SPEED);
-        easyenemies.callAll('animations.add', 'animations', 'walk', [0, 1, 2], 5, false);
-        easyenemies.callAll('animations.add', 'animations', 'die', [3, 4, 5, 6, 7], 3, false);
-
-        // Normal Enemies
-        normalenemies = game.add.group();
-        normalenemies.enableBody = true;
-        var numNormalEnemies = Math.floor(Math.random() * 3 + 3);
-        for (var t = 0; t < numNormalEnemies; t++) {
-            getRandomCoordinates();
-            normalenemies.create(randomX, randomY, 'easyenemies', 8);
-        }
-        normalenemies.setAll('body.velocity.x', NORMAL_ENEMIES_SPEED);
-        normalenemies.setAll('body.velocity.y', NORMAL_ENEMIES_SPEED);
-        normalenemies.callAll('animations.add', 'animations', 'walk', [8, 9, 10], 5, false);
-        normalenemies.callAll('animations.add', 'animations', 'die', [11, 12, 13], 3, false);
 
         // Items 
         items = game.add.group();
@@ -431,33 +327,38 @@ var playOnlineState= {
         items.setAll('')
 
         // Player
-        player = new BomberMan(0, game, 40, 40);
-        game.physics.arcade.enable(player.sprite);
-        // Fix size player
-        player.sprite.body.setSize(34, 34, 0, 4);
-        player.sprite.body.collideWorldBounds = true;
+        this.initialGraphic();
 
-        player.sprite.animations.add('right', [3, 17, 31], 5, false);
-        player.sprite.animations.add('left', [1, 15, 29], 5, false);
-        player.sprite.animations.add('up', [2, 16, 30], 5, false);
-        player.sprite.animations.add('down', [0, 14, 28], 5, false);
-        player.sprite.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);
 
-        layer.debug = true;
 
         cursors = game.input.keyboard.createCursorKeys();
-        pause_label = game.add.text(game.world.width - 100, 20, 'Pause', { font: '24px Arial', fill: '#fff' });
-        pause_label.inputEnabled = true;
-        pause_label.events.onInputUp.add(function () {
-            game.paused = true;
-           });
-        game.input.onDown.add(function () {
-            game.paused = false;
-        }, self);
 	},
+    initialGraphic : function() {
+        for (var p in this.players) {
+            if (p.playerId  == 0) {
+                p.sprite.animations.add('right', [3, 17, 31], 5, false);
+                p.sprite.animations.add('left', [1, 15, 29], 5, false);
+                p.sprite.animations.add('up', [2, 16, 30], 5, false);
+                p.sprite.animations.add('down', [0, 14, 28], 5, false);
+                p.sprite.animations.add('die', [5, 6, 18, 19, 20, 32, 33], 10, false);                
+            }
+            else {
+                p.sprite.animations.add('right', [10, 24, 38], 5, false);
+                p.sprite.animations.add('left', [8, 22, 36], 5, false);
+                p.sprite.animations.add('up', [9, 23, 37], 5, false);
+                p.sprite.animations.add('down', [7, 21, 35], 5, false);
+                p.sprite.animations.add('die', [12, 13, 25, 26, 27, 39, 40], 10, false);                  
+            }
+            game.physics.arcade.enable(this.p.sprite);
+            // Fix size player
+            p.sprite.body.setSize(34, 34, 0, 4);
+            p.sprite.body.collideWorldBounds = true;
+        }
+    },
 	update: function () {
-        socket.emit('updateRoom1', 'ductri');
-        if (!player.sprite.alive) {
+
+/*        if (!player.sprite.alive) {
+
             if (game.time.time - lastTime > 2000) {
                 this.finish();
                 return;                
@@ -469,12 +370,9 @@ var playOnlineState= {
         }
 
         var pos = {x:0, y:0};
-        // pos.x = this.math.snapToFloor(Math.floor(player.sprite.x+17), TILE_WIDTH) / TILE_WIDTH;
-        // pos.y = this.math.snapToFloor(Math.floor(player.sprite.y+21), TILE_WIDTH) / TILE_WIDTH;
+
         pos = getPosTile(player.sprite.x + 17, player.sprite.y + 21);
 
-        game.physics.arcade.collide(easyenemies, layer);
-        game.physics.arcade.collide(normalenemies, layer);
         game.physics.arcade.collide(player.sprite, layer);
         
         game.physics.arcade.collide(bombs, player.sprite);
@@ -482,17 +380,7 @@ var playOnlineState= {
         game.physics.arcade.overlap(bombs, bombs_exploision, bomb_explosion_chain, null, this);
 
         // OVERLAP
-        game.physics.arcade.overlap(bombs_exploision, easyenemies, enemyDeath, null, this);
-        game.physics.arcade.overlap(bombs_exploision, normalenemies, enemyDeath, null, this);        
-        game.physics.arcade.overlap(player.sprite, easyenemies, playerDeath, null, this);
-        game.physics.arcade.overlap(player.sprite, normalenemies, playerDeath, null, this);
         game.physics.arcade.overlap(player.sprite, items, playerHitItem, null, this);
-
-        // Easy enemies
-        easyenemies.forEachAlive(easyEnemyMovement, this, EASY_ENEMIES_SPEED);
-
-        //Normal enemies
-        normalenemies.forEachAlive(normalEnemyMovement, this, player);
 
         player.sprite.body.velocity.x = 0;
         player.sprite.body.velocity.y = 0;
@@ -503,10 +391,6 @@ var playOnlineState= {
             //  Move to the right
             player.sprite.body.velocity.x = player.speed;
             player.sprite.animations.play('right');
-            // var posInTile = getPosTile(player.sprite.x + 17, player.sprite.y + 21);
-            // if (Math.abs(getPosFromTile(posInTile.x, posInTile.y).y - player.sprite.y) < 50) {
-            //     player.sprite.y = getPosFromTile(posInTile.x, posInTile.y).y - TILE_WIDTH*0.5;
-            // }
 
         }
         else if (cursors.left.isDown) {
@@ -540,7 +424,7 @@ var playOnlineState= {
                     console.log(test++);
                 }
             }
-        }
+        }*/
 
 	},
 	finish: function () {
